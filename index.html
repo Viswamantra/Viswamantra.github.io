@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile User Form</title>
+    <title>Geolocation Form</title>
+    <script src="https://apis.mappls.com/advancedmaps/v1/{your_api_key}/map_sdk.js"></script>
 </head>
 <body>
     <h1>Enter Your Details</h1>
@@ -11,13 +12,10 @@
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" required><br><br>
         <label for="mobile">Mobile Number:</label>
-        <input type="tel" id="mobile" name="mobile" required><br><br>
-        <button type="button" onclick="getLocation()">Submit</button>
+        <input type="text" id="mobile" name="mobile" required><br><br>
+        <button type="submit">Submit</button>
     </form>
-
-    <div id="map" style="height: 400px; width: 100%;"></div>
-
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+    <div id="result"></div>
     <script src="script.js"></script>
 </body>
 </html>
