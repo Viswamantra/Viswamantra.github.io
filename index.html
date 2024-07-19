@@ -1,21 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geolocation Form</title>
-    <script src="https://apis.mappls.com/advancedmaps/v1/{2455c343ded5a14cece577ab73f328ab}/map_sdk.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Form</title>
 </head>
 <body>
-    <h1>Enter Your Details</h1>
-    <form id="userForm">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required><br><br>
-        <label for="mobile">Mobile Number:</label>
-        <input type="text" id="mobile" name="mobile" required><br><br>
-        <button type="submit">Submit</button>
-    </form>
-    <div id="result"></div>
-    <script src="script.js"></script>
+  <form id="user-form" name="user-form">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required>
+    <label for="mobile">Mobile Number:</label>
+    <input type="tel" id="mobile" name="mobile" required pattern="[0-9]{10}">
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    document.getElementById('user-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const name = document.getElementById('name').value;
+      const mobile = document.getElementById('mobile').value;
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          fetch('https://example.com/send-location', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name: name,
+              mobile: mobile,
+              latitude: lat,
+              longitude: lon,
+            }),
+          })
+          .then(response => response.json())
+          .then(data => {
+            alert('Location sent successfully');
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+          });
+        });
+      } else {
+        alert('Geolocation is not supported by this browser.');
+      }
+    });
+  </script>
 </body>
 </html>
