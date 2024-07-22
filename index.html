@@ -3,18 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Form</title>
+    <title>Ola Map Example</title>
+    <style>
+        #map {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
+    <!-- Include the Ola Maps API with your API Key -->
+    <script src="https://maps.ola.com/sdk/js?key=YOUR_OLA_MAPS_API_KEY"></script>
 </head>
 <body>
-    <h1>Enter Your Details</h1>
-    <form id="userForm">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required><br><br>
-        <label for="mobile">Mobile Number:</label>
-        <input type="tel" id="mobile" name="mobile" required><br><br>
-        <button type="submit">Submit</button>
-    </form>
-    <div id="location"></div>
-    <script src="app.js"></script>
+    <h1>Ola Map Example</h1>
+    <div id="map"></div>
+
+    <script>
+        function initMap() {
+            // Create a map object and specify the DOM element for display.
+            var map = new OlaMaps.Map(document.getElementById('map'), {
+                center: { lat: 28.7041, lng: 77.1025 }, // Coordinates for New Delhi
+                zoom: 12
+            });
+
+            // Optionally, add a marker
+            var marker = new OlaMaps.Marker({
+                position: { lat: 28.7041, lng: 77.1025 },
+                map: map,
+                title: 'New Delhi'
+            });
+        }
+
+        // Initialize the map when the window loads
+        window.onload = initMap;
+    </script>
 </body>
 </html>
