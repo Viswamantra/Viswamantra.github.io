@@ -15,25 +15,7 @@ document.getElementById('userForm').addEventListener('submit', function(e) {
         const lon = position.coords.longitude;
         document.getElementById('location').innerText = `Latitude: ${lat}, Longitude: ${lon}`;
         
-        // Integrate with Ola Cabs API (example request)
-        fetch(`https://developers.olacabs.com/api/{endpoint}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer YOUR_OLA_API_KEY'
-            },
-            body: JSON.stringify({
-                latitude: lat,
-                longitude: lon,
-                // other required parameters
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Ola API Response:', data);
-            sendWhatsAppMessage(lat, lon);
-        })
-        .catch(error => console.error('Error:', error));
+        sendWhatsAppMessage(name, mobile, lat, lon);
     }
 
     function showError(error) {
@@ -53,7 +35,7 @@ document.getElementById('userForm').addEventListener('submit', function(e) {
         }
     }
     
-    function sendWhatsAppMessage(lat, lon) {
+    function sendWhatsAppMessage(name, mobile, lat, lon) {
         const whatsappNumber = '+917386361725';
         const message = `Name: ${name}, Mobile: ${mobile}, Location: Latitude ${lat}, Longitude ${lon}`;
         const whatsappURL = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}`;
