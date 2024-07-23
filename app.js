@@ -38,7 +38,7 @@ document.getElementById('userForm').addEventListener('submit', function(e) {
     function sendWhatsAppMessage(name, mobile, lat, lon) {
         const whatsappNumber = '+917386361725';
         const message = `Name: ${name}, Mobile: ${mobile}, Location: Latitude ${lat}, Longitude ${lon}`;
-        const whatsappURL = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}`;
+        const whatsappURL = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(OM NAMO VENKATESAYA)}`;
         
         window.open(whatsappURL, '_blank');
     }
