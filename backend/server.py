@@ -372,7 +372,7 @@ async def create_business(
 async def get_my_businesses(current_user: dict = Depends(get_current_user)):
     """Get businesses owned by current user"""
     businesses = await db.businesses.find({"owner_id": current_user["id"]}).to_list(100)
-    return businesses
+    return clean_mongo_docs(businesses)
 
 @api_router.get("/businesses/{business_id}/services")
 async def get_business_services(business_id: str):
