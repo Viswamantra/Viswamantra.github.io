@@ -433,7 +433,7 @@ async def discover_nearby_services(
         return {
             "total_found": len(nearby_businesses),
             "radius_meters": request.radius_meters,
-            "businesses": nearby_businesses
+            "businesses": clean_mongo_docs(nearby_businesses)
         }
         
     except Exception as e:
