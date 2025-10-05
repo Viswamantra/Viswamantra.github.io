@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-import DiscoverScreen from '../components/DiscoverScreen';
-import BusinessScreen from '../components/BusinessScreen';
-import ProfileScreen from '../components/ProfileScreen';
+import DiscoverScreen from './DiscoverScreen';
+import BusinessScreen from './BusinessScreen';
+import ProfileScreen from './ProfileScreen';
 import { Platform } from 'react-native';
 
 const Tab = createBottomTabNavigator();
