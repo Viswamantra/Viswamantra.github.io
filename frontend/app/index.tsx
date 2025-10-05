@@ -3,31 +3,45 @@ import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthScreen from '../components/AuthScreen';
-import DiscoverScreen from '../components/DiscoverScreen';
+import OnboardingScreen from '../components/OnboardingScreen';
+import MainApp from '../components/MainApp';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
+
+type AppState = 'loading' | 'auth' | 'onboarding' | 'main';
 
 function AppContent() {
   const { user, token, loading } = useAuth();
-  const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
+  const [appState, setAppState] = useState<AppState>('loading');
 
   useEffect(() => {
-    checkFirstLaunch();
-  }, []);
+    determineAppState();
+  }, [user, token, loading]);
 
-  const checkFirstLaunch = async () => {
-    try {
-      const hasLaunched = await AsyncStorage.getItem('hasLaunched');
-      setIsFirstLaunch(hasLaunched === null);
-      if (hasLaunched === null) {
-        await AsyncStorage.setItem('hasLaunched', 'true');
-      }
-    } catch (error) {
-      console.error('Error checking first launch:', error);
-      setIsFirstLaunch(false);
+  const determineAppState = async () => {
+    if (loading) {
+      setAppState('loading');
+      return;
     }
+
+    if (!user || !token) {
+      setAppState('auth');
+      return;
+    }
+
+    // Check if user has completed onboarding (has preferences set)
+    if (!user.preferences || user.preferences.length === 0) {
+      setAppState('onboarding');
+      return;
+    }
+
+    setAppState('main');
   };
 
-  if (loading || isFirstLaunch === null) {
+  const handleOnboardingComplete = () => {
+    setAppState('main');
+  };
+
+  if (appState === 'loading') {
     return (
       <View style={[styles.container, styles.centered]}>
         <ActivityIndicator size="large" color="#007AFF" />
@@ -35,13 +49,15 @@ function AppContent() {
     );
   }
 
-  // If user is not authenticated, show auth screen
-  if (!user || !token) {
+  if (appState === 'auth') {
     return <AuthScreen />;
   }
 
-  // If user is authenticated, show main app
-  return <DiscoverScreen />;
+  if (appState === 'onboarding') {
+    return <OnboardingScreen onComplete={handleOnboardingComplete} />;
+  }
+
+  return <MainApp />;
 }
 
 export default function App() {
