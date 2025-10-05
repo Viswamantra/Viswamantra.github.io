@@ -20,7 +20,11 @@ const CATEGORIES = [
   { id: 'spa', name: 'Beauty & Spa', icon: 'flower', color: '#45B7D1' },
 ];
 
-const OnboardingScreen = () => {
+interface OnboardingScreenProps {
+  onComplete: () => void;
+}
+
+const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const [step, setStep] = useState<'welcome' | 'preferences' | 'location'>('welcome');
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
