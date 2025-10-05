@@ -1,16 +1,28 @@
-import { Text, View, StyleSheet, Image } from "react-native";
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { AuthProvider } from '../contexts/AuthContext';
+import AuthScreen from '../components/AuthScreen';
+import MainTabs from '../components/MainTabs';
+import OnboardingScreen from '../components/OnboardingScreen';
+import { StatusBar } from 'expo-status-bar';
 
-const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const Stack = createStackNavigator();
 
-export default function Index() {
-  console.log(EXPO_PUBLIC_BACKEND_URL, "EXPO_PUBLIC_BACKEND_URL");
-
+export default function App() {
   return (
     <View style={styles.container}>
-      <Image
-        source={require("../assets/images/app-image.png")}
-        style={styles.image}
-      />
+      <StatusBar style="dark" />
+      <AuthProvider>
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Auth" component={AuthScreen} />
+            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+            <Stack.Screen name="Main" component={MainTabs} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </AuthProvider>
     </View>
   );
 }
@@ -18,13 +30,6 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0c0c0c",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "contain",
+    backgroundColor: '#fff',
   },
 });
