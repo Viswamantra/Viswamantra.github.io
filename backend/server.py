@@ -151,7 +151,9 @@ def verify_token(token: str) -> Optional[str]:
     except jwt.PyJWTError:
         return None
 
-async def get_current_user(authorization: str = Depends()) -> dict:
+from fastapi import Header
+
+async def get_current_user(authorization: str = Header()) -> dict:
     """Get current user from JWT token"""
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid authorization header")
