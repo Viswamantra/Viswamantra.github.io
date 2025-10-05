@@ -178,7 +178,7 @@ async def get_current_user(authorization: str = Header()) -> dict:
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    return user
+    return clean_mongo_doc(user)
 
 def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Calculate distance between two coordinates in meters (Haversine formula)"""
