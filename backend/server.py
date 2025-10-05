@@ -378,7 +378,7 @@ async def get_my_businesses(current_user: dict = Depends(get_current_user)):
 async def get_business_services(business_id: str):
     """Get services for a specific business"""
     services = await db.services.find({"business_id": business_id, "is_active": True}).to_list(100)
-    return services
+    return clean_mongo_docs(services)
 
 @api_router.post("/businesses/{business_id}/services", response_model=Service)
 async def create_service(
