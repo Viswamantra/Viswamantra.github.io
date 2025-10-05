@@ -1,0 +1,582 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  FlatList,
+  Alert,
+  ActivityIndicator,
+  RefreshControl,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
+import * as Location from 'expo-location';
+
+const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+
+const CATEGORIES = [
+  { id: 'all', name: 'All', icon: 'apps', color: '#666' },
+  { id: 'food', name: 'Food', icon: 'restaurant', color: '#FF6B6B' },
+  { id: 'clothing', name: 'Clothing', icon: 'shirt', color: '#4ECDC4' },
+  { id: 'spa', name: 'Spa', icon: 'flower', color: '#45B7D1' },
+];
+
+const RADIUS_OPTIONS = [
+  { label: '500m', value: 500 },
+  { label: '1km', value: 1000 },
+  { label: '2km', value: 2000 },
+  { label: '5km', value: 5000 },
+];
+
+interface Business {
+  id: string;
+  business_name: string;
+  category: string;
+  phone_number: string;
+  address: string;
+  description?: string;
+  rating: number;
+  distance_meters: number;
+  is_active: boolean;
+}
+
+interface DiscoverResponse {
+  total_found: number;
+  radius_meters: number;
+  businesses: Business[];
+}
+
+const DiscoverScreen = () => {
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedRadius, setSelectedRadius] = useState(1000);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentLocation, setCurrentLocation] = useState<{latitude: number, longitude: number} | null>(null);
+  
+  const { user, token, updateLocation } = useAuth();
+
+  // Get current location
+  const getCurrentLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        
+        const coords = {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        };
+        
+        setCurrentLocation(coords);
+        await updateLocation(coords.latitude, coords.longitude);
+        return coords;
+      }
+    } catch (error) {
+      console.error('Error getting location:', error);
+    }
+    return null;
+  };
+
+  // Discover nearby services
+  const discoverServices = async (location?: {latitude: number, longitude: number}) => {
+    if (!location && !currentLocation) {
+      const newLocation = await getCurrentLocation();
+      if (!newLocation) {
+        Alert.alert('Location Required', 'Please enable location to discover nearby services');
+        return;
+      }
+      location = newLocation;
+    }
+
+    const coords = location || currentLocation!;
+    setLoading(true);
+
+    try {
+      const categories = selectedCategory === 'all' ? undefined : [selectedCategory];
+      
+      const response = await axios.post<DiscoverResponse>(
+        `${EXPO_PUBLIC_BACKEND_URL}/api/discover/nearby`,
+        {
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          radius_meters: selectedRadius,
+          categories,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      let filteredBusinesses = response.data.businesses;
+      
+      // Filter by search query if present
+      if (searchQuery.trim()) {
+        filteredBusinesses = filteredBusinesses.filter(business =>
+          business.business_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          business.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+
+      setBusinesses(filteredBusinesses);
+    } catch (error: any) {
+      console.error('Error discovering services:', error);
+      Alert.alert('Error', 'Failed to discover nearby services');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Initial load
+  useEffect(() => {
+    if (user?.location) {
+      setCurrentLocation(user.location);
+      discoverServices(user.location);
+    } else {
+      getCurrentLocation().then(location => {
+        if (location) {
+          discoverServices(location);
+        }
+      });
+    }
+  }, []);
+
+  // Refresh when filters change
+  useEffect(() => {
+    if (currentLocation) {
+      discoverServices();
+    }
+  }, [selectedCategory, selectedRadius]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    getCurrentLocation().then(location => {
+      if (location) {
+        discoverServices(location);
+      } else {
+        setRefreshing(false);
+      }
+    });
+  }, [selectedCategory, selectedRadius]);
+
+  const handleSearch = () => {
+    if (currentLocation) {
+      discoverServices();
+    }
+  };
+
+  const formatDistance = (meters: number) => {
+    if (meters < 1000) {
+      return `${Math.round(meters)}m`;
+    }
+    return `${(meters / 1000).toFixed(1)}km`;
+  };
+
+  const callBusiness = (phoneNumber: string) => {
+    // In a real app, you'd use Linking.openURL(`tel:${phoneNumber}`)
+    Alert.alert('Call Business', `Contact: ${phoneNumber}\n\nNote: This is a demo. In a real app, this would open the phone dialer.`);
+  };
+
+  const renderBusinessCard = ({ item }: { item: Business }) => (
+    <View style={styles.businessCard}>
+      <View style={styles.businessHeader}>
+        <View style={styles.businessInfo}>
+          <Text style={styles.businessName}>{item.business_name}</Text>
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryText}>{item.category}</Text>
+          </View>
+        </View>
+        <View style={styles.businessMeta}>
+          <View style={styles.distanceContainer}>
+            <Ionicons name="location" size={14} color="#666" />
+            <Text style={styles.distanceText}>{formatDistance(item.distance_meters)}</Text>
+          </View>
+          {item.rating > 0 && (
+            <View style={styles.ratingContainer}>
+              <Ionicons name="star" size={14} color="#FFD700" />
+              <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
+            </View>
+          )}
+        </View>
+      </View>
+      
+      {item.description && (
+        <Text style={styles.businessDescription} numberOfLines={2}>
+          {item.description}
+        </Text>
+      )}
+      
+      <Text style={styles.businessAddress} numberOfLines={1}>
+        {item.address}
+      </Text>
+      
+      <View style={styles.businessActions}>
+        <TouchableOpacity
+          style={styles.callButton}
+          onPress={() => callBusiness(item.phone_number)}
+        >
+          <Ionicons name="call" size={16} color="#007AFF" />
+          <Text style={styles.callButtonText}>Call</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Discover Services</Text>
+        <TouchableOpacity onPress={onRefresh} disabled={loading}>
+          <Ionicons 
+            name={loading ? 'hourglass' : 'refresh'} 
+            size={24} 
+            color="#007AFF" 
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchInputContainer}>
+          <Ionicons name="search" size={20} color="#666" />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search businesses..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmitEditing={handleSearch}
+            returnKeyType="search"
+          />
+        </View>
+      </View>
+
+      {/* Category Filters */}
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoryContainer}
+        contentContainerStyle={styles.categoryContent}
+      >
+        {CATEGORIES.map((category) => (
+          <TouchableOpacity
+            key={category.id}
+            style={[
+              styles.categoryButton,
+              selectedCategory === category.id && styles.categoryButtonActive
+            ]}
+            onPress={() => setSelectedCategory(category.id)}
+          >
+            <Ionicons 
+              name={category.icon as any} 
+              size={20} 
+              color={selectedCategory === category.id ? 'white' : category.color} 
+            />
+            <Text style={[
+              styles.categoryButtonText,
+              selectedCategory === category.id && styles.categoryButtonTextActive
+            ]}>
+              {category.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Radius Filter */}
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.radiusContainer}
+        contentContainerStyle={styles.radiusContent}
+      >
+        <Text style={styles.radiusLabel}>Radius:</Text>
+        {RADIUS_OPTIONS.map((option) => (
+          <TouchableOpacity
+            key={option.value}
+            style={[
+              styles.radiusButton,
+              selectedRadius === option.value && styles.radiusButtonActive
+            ]}
+            onPress={() => setSelectedRadius(option.value)}
+          >
+            <Text style={[
+              styles.radiusButtonText,
+              selectedRadius === option.value && styles.radiusButtonTextActive
+            ]}>
+              {option.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Results */}
+      <View style={styles.resultsContainer}>
+        <Text style={styles.resultsText}>
+          {loading ? 'Searching...' : `Found ${businesses.length} businesses`}
+        </Text>
+      </View>
+
+      {/* Business List */}
+      <FlatList
+        data={businesses}
+        renderItem={renderBusinessCard}
+        keyExtractor={(item) => item.id}
+        style={styles.businessList}
+        contentContainerStyle={styles.businessListContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        ListEmptyComponent={
+          !loading ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="business-outline" size={48} color="#ccc" />
+              <Text style={styles.emptyStateText}>No businesses found</Text>
+              <Text style={styles.emptyStateSubtext}>
+                Try adjusting your filters or increasing the search radius
+              </Text>
+            </View>
+          ) : null
+        }
+      />
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#000',
+  },
+  categoryContainer: {
+    maxHeight: 60,
+  },
+  categoryContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+  categoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 12,
+    borderRadius: 20,
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  categoryButtonActive: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  categoryButtonText: {
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#666',
+  },
+  categoryButtonTextActive: {
+    color: 'white',
+  },
+  radiusContainer: {
+    maxHeight: 50,
+  },
+  radiusContent: {
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    paddingBottom: 16,
+  },
+  radiusLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    marginRight: 12,
+  },
+  radiusButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 8,
+    borderRadius: 16,
+    backgroundColor: '#f0f0f0',
+  },
+  radiusButtonActive: {
+    backgroundColor: '#007AFF',
+  },
+  radiusButtonText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#666',
+  },
+  radiusButtonTextActive: {
+    color: 'white',
+  },
+  resultsContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+  },
+  resultsText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  businessList: {
+    flex: 1,
+  },
+  businessListContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  businessCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  businessHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  businessInfo: {
+    flex: 1,
+  },
+  businessName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 4,
+  },
+  categoryBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#f0f7ff',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  categoryText: {
+    fontSize: 12,
+    color: '#007AFF',
+    fontWeight: '500',
+    textTransform: 'capitalize',
+  },
+  businessMeta: {
+    alignItems: 'flex-end',
+  },
+  distanceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  distanceText: {
+    marginLeft: 4,
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ratingText: {
+    marginLeft: 4,
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
+  },
+  businessDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
+    lineHeight: 20,
+  },
+  businessAddress: {
+    fontSize: 14,
+    color: '#999',
+    marginBottom: 12,
+  },
+  businessActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  callButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#f0f7ff',
+  },
+  callButtonText: {
+    marginLeft: 4,
+    fontSize: 14,
+    color: '#007AFF',
+    fontWeight: '600',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyStateText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#666',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    paddingHorizontal: 40,
+  },
+});
+
+export default DiscoverScreen;
