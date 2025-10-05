@@ -25,7 +25,7 @@ const AuthScreen = () => {
   const [demoOTP, setDemoOTP] = useState<string>('');
   
   const { sendOTP, verifyOTP, login } = useAuth();
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
 
   const handleMethodSelect = (method: 'phone' | 'email') => {
     setAuthMethod(method);
