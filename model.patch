@@ -1,0 +1,210 @@
+diff --git a/backend/server.py b/backend/server.py
+index 4d14adb..8d0f5bd 100644
+--- a/backend/server.py
++++ b/backend/server.py
+@@ -151,6 +151,19 @@ def verify_token(token: str) -> Optional[str]:
+     except jwt.PyJWTError:
+         return None
+ 
++def clean_mongo_doc(doc: dict) -> dict:
++    """Remove MongoDB ObjectId fields to make document JSON serializable"""
++    if doc is None:
++        return None
++    # Remove _id field which contains ObjectId
++    if "_id" in doc:
++        del doc["_id"]
++    return doc
++
++def clean_mongo_docs(docs: list) -> list:
++    """Clean a list of MongoDB documents"""
++    return [clean_mongo_doc(doc) for doc in docs if doc is not None]
++
+ async def get_current_user(authorization: str = Header()) -> dict:
+     """Get current user from JWT token"""
+     if not authorization.startswith("Bearer "):
+@@ -165,7 +178,7 @@ async def get_current_user(authorization: str = Header()) -> dict:
+     if not user:
+         raise HTTPException(status_code=404, detail="User not found")
+     
+-    return user
++    return clean_mongo_doc(user)
+ 
+ def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+     """Calculate distance between two coordinates in meters (Haversine formula)"""
+@@ -359,13 +372,13 @@ async def create_business(
+ async def get_my_businesses(current_user: dict = Depends(get_current_user)):
+     """Get businesses owned by current user"""
+     businesses = await db.businesses.find({"owner_id": current_user["id"]}).to_list(100)
+-    return businesses
++    return clean_mongo_docs(businesses)
+ 
+ @api_router.get("/businesses/{business_id}/services")
+ async def get_business_services(business_id: str):
+     """Get services for a specific business"""
+     services = await db.services.find({"business_id": business_id, "is_active": True}).to_list(100)
+-    return services
++    return clean_mongo_docs(services)
+ 
+ @api_router.post("/businesses/{business_id}/services", response_model=Service)
+ async def create_service(
+@@ -420,7 +433,7 @@ async def discover_nearby_services(
+         return {
+             "total_found": len(nearby_businesses),
+             "radius_meters": request.radius_meters,
+-            "businesses": nearby_businesses
++            "businesses": clean_mongo_docs(nearby_businesses)
+         }
+         
+     except Exception as e:
+diff --git a/test_result.md b/test_result.md
+index 187cba4..d032491 100644
+--- a/test_result.md
++++ b/test_result.md
+@@ -100,4 +100,144 @@
+ 
+ #====================================================================================================
+ # Testing Data - Main Agent and testing sub agent both should log testing data below this section
+-#====================================================================================================
+\ No newline at end of file
++#====================================================================================================
++
++user_problem_statement: "Test the SheshA backend API for location-based service discovery app with authentication, user management, business operations, and service discovery features"
++
++backend:
++  - task: "Health Check Endpoint"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "high"
++    needs_retesting: false
++    status_history:
++        - working: true
++          agent: "testing"
++          comment: "✅ /api/health endpoint working correctly - returns healthy status with timestamp"
++
++  - task: "OTP Authentication System"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "high"
++    needs_retesting: false
++    status_history:
++        - working: true
++          agent: "testing"
++          comment: "✅ Both /api/auth/send-otp and /api/auth/verify-otp working correctly. **MOCKED** OTP system returns demo codes for testing. JWT token generation working properly."
++
++  - task: "User Profile Management"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "high"
++    needs_retesting: false
++    status_history:
++        - working: false
++          agent: "testing"
++          comment: "❌ Initial test failed due to MongoDB ObjectId serialization issues"
++        - working: true
++          agent: "testing"
++          comment: "✅ Fixed ObjectId serialization issue by adding clean_mongo_doc helper function. /api/users/profile now returns user data correctly"
++
++  - task: "User Preferences Update"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "medium"
++    needs_retesting: false
++    status_history:
++        - working: true
++          agent: "testing"
++          comment: "✅ /api/users/preferences endpoint working correctly - validates preferences (food, clothing, spa) and updates user data"
++
++  - task: "User Location Update"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "medium"
++    needs_retesting: false
++    status_history:
++        - working: true
++          agent: "testing"
++          comment: "✅ /api/users/location endpoint working correctly - accepts latitude/longitude coordinates and updates user location"
++
++  - task: "Business Creation"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "high"
++    needs_retesting: false
++    status_history:
++        - working: true
++          agent: "testing"
++          comment: "✅ /api/businesses endpoint working correctly - creates business with all required fields and automatically updates user type to business_owner"
++
++  - task: "Business Listing"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "medium"
++    needs_retesting: false
++    status_history:
++        - working: false
++          agent: "testing"
++          comment: "❌ Initial test failed due to MongoDB ObjectId serialization issues"
++        - working: true
++          agent: "testing"
++          comment: "✅ Fixed ObjectId serialization issue. /api/businesses/my now returns user's businesses correctly"
++
++  - task: "Service Discovery"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "high"
++    needs_retesting: false
++    status_history:
++        - working: false
++          agent: "testing"
++          comment: "❌ Initial test failed due to MongoDB ObjectId serialization issues"
++        - working: true
++          agent: "testing"
++          comment: "✅ Fixed ObjectId serialization issue. /api/discover/nearby working correctly - finds businesses within specified radius using Haversine formula for distance calculation"
++
++  - task: "JWT Authentication System"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "high"
++    needs_retesting: false
++    status_history:
++        - working: true
++          agent: "testing"
++          comment: "✅ JWT token authentication working correctly across all protected endpoints. Bearer token validation implemented properly"
++
++frontend:
++  # No frontend testing performed as per instructions
++
++metadata:
++  created_by: "testing_agent"
++  version: "1.0"
++  test_sequence: 1
++  run_ui: false
++
++test_plan:
++  current_focus:
++    - "All backend API endpoints tested successfully"
++  stuck_tasks: []
++  test_all: true
++  test_priority: "high_first"
++
++agent_communication:
++    - agent: "testing"
++      message: "Completed comprehensive backend API testing. Fixed critical MongoDB ObjectId serialization issues that were causing 500 errors on GET endpoints. All 9 API endpoints now working correctly with 100% success rate. Authentication flow, user management, business operations, and service discovery all functional."
+\ No newline at end of file
