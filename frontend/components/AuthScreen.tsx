@@ -85,7 +85,7 @@ const AuthScreen = () => {
         };
         
         await login(result.access_token, userData as any);
-        navigation.navigate('Onboarding' as never);
+        // Navigation will be handled by the parent component
       }
     } catch (error: any) {
       Alert.alert('Error', error.message);
