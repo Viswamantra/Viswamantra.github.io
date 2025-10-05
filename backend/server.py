@@ -151,6 +151,19 @@ def verify_token(token: str) -> Optional[str]:
     except jwt.PyJWTError:
         return None
 
+def clean_mongo_doc(doc: dict) -> dict:
+    """Remove MongoDB ObjectId fields to make document JSON serializable"""
+    if doc is None:
+        return None
+    # Remove _id field which contains ObjectId
+    if "_id" in doc:
+        del doc["_id"]
+    return doc
+
+def clean_mongo_docs(docs: list) -> list:
+    """Clean a list of MongoDB documents"""
+    return [clean_mongo_doc(doc) for doc in docs if doc is not None]
+
 async def get_current_user(authorization: str = Header()) -> dict:
     """Get current user from JWT token"""
     if not authorization.startswith("Bearer "):
