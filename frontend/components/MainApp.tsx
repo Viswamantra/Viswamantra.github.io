@@ -18,12 +18,14 @@ const MainApp = () => {
     switch (activeTab) {
       case 'discover':
         return <DiscoverScreen />;
+      case 'offers':
+        return <OffersScreen />;
       case 'business':
         return <BusinessScreen />;
       case 'profile':
         return <ProfileScreen />;
       default:
-        return <DiscoverScreen />;
+        return <OffersScreen />;
     }
   };
 
