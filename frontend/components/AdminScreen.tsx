@@ -227,7 +227,7 @@ const AdminScreen = () => {
               <View style={styles.revenueItem}>
                 <Text style={styles.revenueLabel}>Total OshirO Revenue (2%)</Text>
                 <Text style={styles.revenueTotalValue}>{formatCurrency(stats?.total_revenue || 0)}</Text>
-              </div>
+              </View>
             </View>
             
             <View style={styles.revenueRow}>
