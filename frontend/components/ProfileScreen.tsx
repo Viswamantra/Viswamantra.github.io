@@ -32,8 +32,12 @@ const ProfileScreen = () => {
           text: 'Logout', 
           style: 'destructive',
           onPress: async () => {
-            await logout();
-            // App will automatically show auth screen due to state change
+            try {
+              await logout();
+              // Navigation will be handled by parent component
+            } catch (error) {
+              console.error('Logout error:', error);
+            }
           }
         },
       ]
