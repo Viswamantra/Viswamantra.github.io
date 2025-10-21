@@ -6,9 +6,10 @@ import { useAuth } from '../contexts/AuthContext';
 import CustomerScreen from './CustomerScreen';
 import MerchantScreen from './MerchantScreen';
 import AdminScreen from './AdminScreen';
+import QRGenerator from './QRGenerator';
 import ProfileScreen from './ProfileScreen';
 
-type TabType = 'customer' | 'merchant' | 'admin' | 'profile';
+type TabType = 'customer' | 'merchant' | 'qr' | 'admin' | 'profile';
 
 const MainApp = () => {
   const [activeTab, setActiveTab] = useState<TabType>('customer');
