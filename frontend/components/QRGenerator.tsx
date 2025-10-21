@@ -12,7 +12,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
 
 const QRGenerator = () => {
-  const appUrl = 'https://shesha-finder.preview.emergentagent.com';
+  const appUrl = 'https://shop-nearby-3.preview.emergentagent.com';
   
   const customerRegistrationUrl = `${appUrl}?type=customer&ref=qr`;
   const merchantRegistrationUrl = `${appUrl}?type=merchant&ref=qr`;
