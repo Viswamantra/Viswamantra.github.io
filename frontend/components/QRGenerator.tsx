@@ -57,9 +57,6 @@ const QRGenerator = () => {
               size={200}
               color="#007AFF"
               backgroundColor="#fff"
-              logo={require('../assets/icon.png') || undefined}
-              logoSize={40}
-              logoBackgroundColor="transparent"
             />
           </View>
           
