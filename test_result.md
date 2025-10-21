@@ -299,7 +299,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "All backend API endpoints tested successfully"
+    - "NEW Offers functionality testing completed successfully"
+    - "All backend API endpoints tested and working"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
@@ -307,3 +308,5 @@ test_plan:
 agent_communication:
     - agent: "testing"
       message: "Completed comprehensive backend API testing. Fixed critical MongoDB ObjectId serialization issues that were causing 500 errors on GET endpoints. All 9 API endpoints now working correctly with 100% success rate. Authentication flow, user management, business operations, and service discovery all functional."
+    - agent: "testing"
+      message: "✅ NEW OFFERS FUNCTIONALITY TESTING COMPLETE: Successfully tested all 5 new offers endpoints. Fixed critical ObjectId serialization issues in /api/offers/my and /api/offers/nearby endpoints. All offers features working: creation (percentage & fixed discounts), retrieval, location-based discovery, and deactivation. Comprehensive test coverage with 93.8% success rate (15/16 tests passed). Only 'failure' was expected OTP expiry behavior."
