@@ -97,7 +97,7 @@ const AuthScreen = () => {
   const renderMethodSelection = () => (
     <View style={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Welcome to SheshA</Text>
+        <Text style={styles.title}>Welcome to OshirO</Text>
         <Text style={styles.subtitle}>Discover amazing services near you</Text>
       </View>
 
