@@ -51,6 +51,20 @@ const MainApp = () => {
           </Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'offers' && styles.activeTab]}
+          onPress={() => setActiveTab('offers')}
+        >
+          <Ionicons
+            name={activeTab === 'offers' ? 'gift' : 'gift-outline'}
+            size={24}
+            color={activeTab === 'offers' ? '#007AFF' : '#666'}
+          />
+          <Text style={[styles.tabText, activeTab === 'offers' && styles.activeTabText]}>
+            Offers
+          </Text>
+        </TouchableOpacity>
+
         {user?.user_type === 'business_owner' && (
           <TouchableOpacity
             style={[styles.tab, activeTab === 'business' && styles.activeTab]}
