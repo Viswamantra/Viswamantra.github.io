@@ -5,9 +5,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import CustomerScreen from './CustomerScreen';
 import MerchantScreen from './MerchantScreen';
+import AdminScreen from './AdminScreen';
 import ProfileScreen from './ProfileScreen';
 
-type TabType = 'customer' | 'merchant' | 'profile';
+type TabType = 'customer' | 'merchant' | 'admin' | 'profile';
 
 const MainApp = () => {
   const [activeTab, setActiveTab] = useState<TabType>('customer');
