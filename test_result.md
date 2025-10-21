@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the SheshA backend API for location-based service discovery app with authentication, user management, business operations, and service discovery features"
+user_problem_statement: "Test the OshirO backend API for location-based service discovery app with authentication, user management, business operations, service discovery, and NEW OFFERS functionality"
 
 backend:
   - task: "Health Check Endpoint"
@@ -221,6 +221,72 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ JWT token authentication working correctly across all protected endpoints. Bearer token validation implemented properly"
+
+  - task: "Create Business Offers"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ POST /api/businesses/{business_id}/offers working correctly - supports both percentage and fixed amount discounts. Automatically calculates discounted prices. Validates business ownership."
+
+  - task: "Get Business Offers"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ GET /api/businesses/{business_id}/offers working correctly - returns active offers for a specific business with proper filtering by expiry date"
+
+  - task: "Get User's Offers"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ Initial test failed due to MongoDB ObjectId serialization in business_info"
+        - working: true
+          agent: "testing"
+          comment: "✅ GET /api/offers/my working correctly after fixing ObjectId serialization. Returns offers for businesses owned by current user with complete business information included."
+
+  - task: "Nearby Offers Discovery"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ Initial test failed due to MongoDB ObjectId serialization in business_info"
+        - working: true
+          agent: "testing"
+          comment: "✅ POST /api/offers/nearby working correctly after fixing ObjectId serialization. Location-based offers discovery with distance calculation, category filtering, and proper sorting by distance."
+
+  - task: "Deactivate Offers"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ PUT /api/offers/{offer_id}/deactivate working correctly - validates business ownership and properly deactivates offers. Deactivated offers no longer appear in active offer listings."
 
 frontend:
   # No frontend testing performed as per instructions
