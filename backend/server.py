@@ -161,6 +161,62 @@ class AuthToken(BaseModel):
     token_type: str = "bearer"
     user_id: str
 
+class PaymentOrder(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    customer_id: str
+    merchant_id: str
+    business_id: str
+    offer_id: Optional[str] = None
+    amount: float  # Total amount
+    oshiro_fee: float  # 2% fee
+    merchant_amount: float  # Amount after fee
+    payment_method: str  # "razorpay", "paytm", "phonepe"
+    razorpay_order_id: Optional[str] = None
+    payment_status: str = "pending"  # pending, completed, failed
+    payment_id: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    completed_at: Optional[datetime] = None
+
+class PaymentCreate(BaseModel):
+    business_id: str
+    offer_id: Optional[str] = None
+    amount: float
+    payment_method: str
+
+class Purchase(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    customer_id: str
+    merchant_id: str
+    business_id: str
+    offer_id: Optional[str] = None
+    payment_order_id: str
+    original_amount: Optional[float] = None
+    discount_amount: Optional[float] = None
+    final_amount: float
+    oshiro_revenue: float  # 2% of final amount
+    purchase_date: datetime = Field(default_factory=datetime.utcnow)
+    status: str = "completed"
+
+class WhatsAppNotification(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    recipient_phone: str
+    message: str
+    message_type: str  # "discount_alert", "payment_success", "offer_notification"
+    sent_at: datetime = Field(default_factory=datetime.utcnow)
+    status: str = "sent"  # sent, failed (mock system)
+
+class AdminStats(BaseModel):
+    total_customers: int
+    total_merchants: int
+    total_businesses: int
+    total_offers: int
+    total_purchases: int
+    total_revenue: float  # OshirO's 2% revenue
+    total_sales_volume: float
+    total_discounts_given: float
+    active_users_today: int
+    popular_categories: List[dict]
+
 # Helper functions
 def generate_otp() -> str:
     """Generate a 6-digit OTP code for demo purposes"""
