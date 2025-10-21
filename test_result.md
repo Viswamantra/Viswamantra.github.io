@@ -327,8 +327,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "NEW Offers functionality testing completed successfully"
-    - "All backend API endpoints tested and working"
+    - "Frontend critical errors fixed (ScrollView import and icon.png asset)"
+    - "Re-verify all backend endpoints are still working"
+    - "Test QR code generation without logo"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
