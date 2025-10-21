@@ -74,6 +74,20 @@ const MainApp = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={[styles.tab, activeTab === 'qr' && styles.activeTab]}
+          onPress={() => setActiveTab('qr')}
+        >
+          <Ionicons
+            name={activeTab === 'qr' ? 'qr-code' : 'qr-code-outline'}
+            size={20}
+            color={activeTab === 'qr' ? '#007AFF' : '#666'}
+          />
+          <Text style={[styles.tabText, activeTab === 'qr' && styles.activeTabText]}>
+            QR Codes
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={[styles.tab, activeTab === 'admin' && styles.activeTab]}
           onPress={() => setActiveTab('admin')}
         >
