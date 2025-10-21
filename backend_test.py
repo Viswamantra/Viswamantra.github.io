@@ -259,6 +259,182 @@ class SheshAAPITester:
             self.log_test("Discover Nearby Services", False, f"Error: {str(e)}")
             return False
     
+    def test_create_offer(self, business_id: str):
+        """Test POST /api/businesses/{business_id}/offers endpoint"""
+        try:
+            headers = self.get_auth_headers()
+            from datetime import timedelta
+            valid_until = (datetime.now() + timedelta(days=30)).isoformat() + "Z"
+            
+            offer_data = {
+                "title": "Special Lunch Deal",
+                "description": "Get 20% off on all lunch items",
+                "discount_type": "percentage",
+                "discount_value": 20,
+                "original_price": 500,
+                "valid_until": valid_until,
+                "max_uses": 100,
+                "terms_conditions": "Valid for dine-in only"
+            }
+            
+            response = requests.post(f"{self.base_url}/api/businesses/{business_id}/offers", 
+                                   json=offer_data, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "id" in data and data.get("title") == offer_data["title"]:
+                    # Verify discount calculation
+                    expected_discounted = 400  # 20% off 500
+                    if data.get("discounted_price") == expected_discounted:
+                        self.log_test("Create Offer", True, f"Offer created: {data.get('title')}, discounted price: ${data.get('discounted_price')}", data)
+                        return data["id"]
+                    else:
+                        self.log_test("Create Offer", False, f"Incorrect discount calculation: expected ${expected_discounted}, got ${data.get('discounted_price')}", data)
+                        return None
+                else:
+                    self.log_test("Create Offer", False, "Invalid offer response", data)
+                    return None
+            else:
+                self.log_test("Create Offer", False, f"HTTP {response.status_code}", response.json() if response.text else {})
+                return None
+        except Exception as e:
+            self.log_test("Create Offer", False, f"Error: {str(e)}")
+            return None
+    
+    def test_create_fixed_amount_offer(self, business_id: str):
+        """Test creating offer with fixed amount discount"""
+        try:
+            headers = self.get_auth_headers()
+            from datetime import timedelta
+            valid_until = (datetime.now() + timedelta(days=15)).isoformat() + "Z"
+            
+            offer_data = {
+                "title": "Fixed $50 Off Deal",
+                "description": "Get $50 off on orders above $200",
+                "discount_type": "fixed_amount",
+                "discount_value": 50,
+                "original_price": 200,
+                "valid_until": valid_until,
+                "max_uses": 50,
+                "terms_conditions": "Minimum order $200"
+            }
+            
+            response = requests.post(f"{self.base_url}/api/businesses/{business_id}/offers", 
+                                   json=offer_data, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                expected_discounted = 150  # 200 - 50
+                if data.get("discounted_price") == expected_discounted:
+                    self.log_test("Create Fixed Amount Offer", True, f"Fixed amount offer created: ${data.get('original_price')} - ${data.get('discount_value')} = ${data.get('discounted_price')}", data)
+                    return data["id"]
+                else:
+                    self.log_test("Create Fixed Amount Offer", False, f"Incorrect fixed amount calculation", data)
+                    return None
+            else:
+                self.log_test("Create Fixed Amount Offer", False, f"HTTP {response.status_code}", response.json() if response.text else {})
+                return None
+        except Exception as e:
+            self.log_test("Create Fixed Amount Offer", False, f"Error: {str(e)}")
+            return None
+    
+    def test_get_business_offers(self, business_id: str):
+        """Test GET /api/businesses/{business_id}/offers endpoint"""
+        try:
+            response = requests.get(f"{self.base_url}/api/businesses/{business_id}/offers", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    active_offers = [offer for offer in data if offer.get("is_active")]
+                    self.log_test("Get Business Offers", True, f"Retrieved {len(data)} offers ({len(active_offers)} active)", {"total": len(data), "active": len(active_offers)})
+                    return True
+                else:
+                    self.log_test("Get Business Offers", False, "Invalid response format", data)
+                    return False
+            else:
+                self.log_test("Get Business Offers", False, f"HTTP {response.status_code}", response.json() if response.text else {})
+                return False
+        except Exception as e:
+            self.log_test("Get Business Offers", False, f"Error: {str(e)}")
+            return False
+    
+    def test_get_my_offers(self):
+        """Test GET /api/offers/my endpoint"""
+        try:
+            headers = self.get_auth_headers()
+            response = requests.get(f"{self.base_url}/api/offers/my", headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    # Check that offers include business info
+                    offers_with_business_info = [offer for offer in data if "business_info" in offer]
+                    self.log_test("Get My Offers", True, f"Retrieved {len(data)} user offers ({len(offers_with_business_info)} with business info)", {"total": len(data), "with_business_info": len(offers_with_business_info)})
+                    return True
+                else:
+                    self.log_test("Get My Offers", False, "Invalid response format", data)
+                    return False
+            else:
+                self.log_test("Get My Offers", False, f"HTTP {response.status_code}", response.json() if response.text else {})
+                return False
+        except Exception as e:
+            self.log_test("Get My Offers", False, f"Error: {str(e)}")
+            return False
+    
+    def test_nearby_offers(self):
+        """Test POST /api/offers/nearby endpoint"""
+        try:
+            headers = self.get_auth_headers()
+            search_data = {
+                "latitude": 12.9716,
+                "longitude": 77.5946,
+                "radius_meters": 5000,
+                "categories": ["food"]
+            }
+            
+            response = requests.post(f"{self.base_url}/api/offers/nearby", 
+                                   json=search_data, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "total_found" in data and "offers" in data and "radius_meters" in data:
+                    offers = data["offers"]
+                    offers_with_distance = [offer for offer in offers if "distance_meters" in offer]
+                    self.log_test("Get Nearby Offers", True, f"Found {data['total_found']} nearby offers within {data['radius_meters']}m ({len(offers_with_distance)} with distance)", data)
+                    return True
+                else:
+                    self.log_test("Get Nearby Offers", False, "Invalid response format", data)
+                    return False
+            else:
+                self.log_test("Get Nearby Offers", False, f"HTTP {response.status_code}", response.json() if response.text else {})
+                return False
+        except Exception as e:
+            self.log_test("Get Nearby Offers", False, f"Error: {str(e)}")
+            return False
+    
+    def test_deactivate_offer(self, offer_id: str):
+        """Test PUT /api/offers/{offer_id}/deactivate endpoint"""
+        try:
+            headers = self.get_auth_headers()
+            response = requests.put(f"{self.base_url}/api/offers/{offer_id}/deactivate", 
+                                  headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success"):
+                    self.log_test("Deactivate Offer", True, f"Offer {offer_id} deactivated successfully", data)
+                    return True
+                else:
+                    self.log_test("Deactivate Offer", False, "Deactivation failed", data)
+                    return False
+            else:
+                self.log_test("Deactivate Offer", False, f"HTTP {response.status_code}", response.json() if response.text else {})
+                return False
+        except Exception as e:
+            self.log_test("Deactivate Offer", False, f"Error: {str(e)}")
+            return False
+    
     def run_full_test_suite(self):
         """Run complete test suite"""
         print("🚀 Starting SheshA Backend API Test Suite")
