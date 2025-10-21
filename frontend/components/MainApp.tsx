@@ -10,7 +10,7 @@ import ProfileScreen from './ProfileScreen';
 type TabType = 'customer' | 'merchant' | 'profile';
 
 const MainApp = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('offers');
+  const [activeTab, setActiveTab] = useState<TabType>('customer');
   const { user } = useAuth();
 
   const renderContent = () => {
