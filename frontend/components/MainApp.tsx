@@ -20,6 +20,8 @@ const MainApp = () => {
         return <CustomerScreen />;
       case 'merchant':
         return <MerchantScreen />;
+      case 'admin':
+        return <AdminScreen />;
       case 'profile':
         return <ProfileScreen />;
       default:
