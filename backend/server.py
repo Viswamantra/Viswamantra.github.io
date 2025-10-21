@@ -430,6 +430,160 @@ async def create_service(
     await db.services.insert_one(service.dict())
     return service
 
+# Offers Routes
+@api_router.post("/businesses/{business_id}/offers", response_model=Offer)
+async def create_offer(
+    business_id: str,
+    offer_data: OfferCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create an offer for a business"""
+    # Verify business ownership
+    business = await db.businesses.find_one({"id": business_id, "owner_id": current_user["id"]})
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found or not owned by user")
+    
+    # Parse valid_until date
+    from datetime import datetime
+    try:
+        valid_until = datetime.fromisoformat(offer_data.valid_until.replace('Z', '+00:00'))
+    except:
+        raise HTTPException(status_code=400, detail="Invalid date format for valid_until")
+    
+    # Calculate discounted price if original price is provided
+    discounted_price = None
+    if offer_data.original_price:
+        if offer_data.discount_type == "percentage":
+            discounted_price = offer_data.original_price * (1 - offer_data.discount_value / 100)
+        elif offer_data.discount_type == "fixed_amount":
+            discounted_price = max(0, offer_data.original_price - offer_data.discount_value)
+    
+    offer = Offer(
+        business_id=business_id,
+        title=offer_data.title,
+        description=offer_data.description,
+        discount_type=offer_data.discount_type,
+        discount_value=offer_data.discount_value,
+        original_price=offer_data.original_price,
+        discounted_price=discounted_price,
+        image_base64=offer_data.image_base64,
+        valid_until=valid_until,
+        max_uses=offer_data.max_uses,
+        terms_conditions=offer_data.terms_conditions
+    )
+    
+    await db.offers.insert_one(offer.dict())
+    return offer
+
+@api_router.get("/businesses/{business_id}/offers")
+async def get_business_offers(business_id: str):
+    """Get offers for a specific business"""
+    offers = await db.offers.find({
+        "business_id": business_id, 
+        "is_active": True,
+        "valid_until": {"$gt": datetime.utcnow()}
+    }).to_list(100)
+    return clean_mongo_docs(offers)
+
+@api_router.get("/offers/my")
+async def get_my_offers(current_user: dict = Depends(get_current_user)):
+    """Get offers for businesses owned by current user"""
+    # Get user's businesses
+    businesses = await db.businesses.find({"owner_id": current_user["id"]}).to_list(100)
+    business_ids = [b["id"] for b in businesses]
+    
+    if not business_ids:
+        return []
+    
+    offers = await db.offers.find({
+        "business_id": {"$in": business_ids},
+        "is_active": True
+    }).to_list(100)
+    
+    # Add business info to each offer
+    business_map = {b["id"]: b for b in businesses}
+    for offer in offers:
+        if offer["business_id"] in business_map:
+            offer["business_info"] = business_map[offer["business_id"]]
+    
+    return clean_mongo_docs(offers)
+
+@api_router.post("/offers/nearby")
+async def get_nearby_offers(
+    request: NearbyServicesRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get offers from nearby businesses"""
+    try:
+        # Get all active businesses
+        query = {"is_active": True}
+        if request.categories:
+            query["category"] = {"$in": request.categories}
+        
+        businesses = await db.businesses.find(query).to_list(1000)
+        
+        nearby_businesses = []
+        for business in businesses:
+            if "location" in business:
+                distance = calculate_distance(
+                    request.latitude, request.longitude,
+                    business["location"]["latitude"], business["location"]["longitude"]
+                )
+                
+                if distance <= request.radius_meters:
+                    business["distance_meters"] = round(distance)
+                    nearby_businesses.append(business)
+        
+        # Get offers for nearby businesses
+        business_ids = [b["id"] for b in nearby_businesses]
+        offers = await db.offers.find({
+            "business_id": {"$in": business_ids},
+            "is_active": True,
+            "valid_until": {"$gt": datetime.utcnow()}
+        }).to_list(1000)
+        
+        # Add business info and distance to offers
+        business_map = {b["id"]: b for b in nearby_businesses}
+        for offer in offers:
+            if offer["business_id"] in business_map:
+                business_info = business_map[offer["business_id"]]
+                offer["business_info"] = business_info
+                offer["distance_meters"] = business_info["distance_meters"]
+        
+        # Sort by distance
+        offers.sort(key=lambda x: x.get("distance_meters", float('inf')))
+        
+        return {
+            "total_found": len(offers),
+            "radius_meters": request.radius_meters,
+            "offers": clean_mongo_docs(offers)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/offers/{offer_id}/deactivate")
+async def deactivate_offer(
+    offer_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Deactivate an offer"""
+    # Find offer and verify ownership through business
+    offer = await db.offers.find_one({"id": offer_id})
+    if not offer:
+        raise HTTPException(status_code=404, detail="Offer not found")
+    
+    business = await db.businesses.find_one({"id": offer["business_id"], "owner_id": current_user["id"]})
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found or not owned by user")
+    
+    await db.offers.update_one(
+        {"id": offer_id},
+        {"$set": {"is_active": False}}
+    )
+    
+    return {"success": True, "message": "Offer deactivated successfully"}
+
 # Discovery Routes
 @api_router.post("/discover/nearby")
 async def discover_nearby_services(
