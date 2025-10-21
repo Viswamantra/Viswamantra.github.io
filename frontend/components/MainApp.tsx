@@ -21,6 +21,8 @@ const MainApp = () => {
         return <CustomerScreen />;
       case 'merchant':
         return <MerchantScreen />;
+      case 'qr':
+        return <QRGenerator />;
       case 'admin':
         return <AdminScreen />;
       case 'profile':
