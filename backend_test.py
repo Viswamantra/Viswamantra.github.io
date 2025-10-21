@@ -437,7 +437,7 @@ class SheshAAPITester:
     
     def run_full_test_suite(self):
         """Run complete test suite"""
-        print("🚀 Starting SheshA Backend API Test Suite")
+        print("🚀 Starting OshirO Backend API Test Suite")
         print(f"📍 Testing against: {self.base_url}")
         print("=" * 60)
         
@@ -446,18 +446,25 @@ class SheshAAPITester:
             print("❌ Health check failed - stopping tests")
             return False
         
-        # Test 2: Authentication Flow
+        # Test 2: Authentication Flow - Use existing credentials first
         print("\n📱 Testing Authentication Flow...")
-        test_phone = "+919182653234"
-        otp_code = self.test_send_otp(test_phone, "phone")
         
-        if not otp_code:
-            print("❌ OTP sending failed - stopping tests")
-            return False
+        # Try existing email and OTP first
+        test_email = "viswamantrateam@gmail.com"
+        existing_otp = "956819"
         
-        if not self.test_verify_otp(test_phone, "phone", otp_code):
-            print("❌ OTP verification failed - stopping tests")
-            return False
+        print(f"🔐 Trying existing credentials: {test_email} with OTP {existing_otp}")
+        if not self.test_verify_otp(test_email, "email", existing_otp):
+            print("🔄 Existing OTP invalid, generating new one...")
+            otp_code = self.test_send_otp(test_email, "email")
+            
+            if not otp_code:
+                print("❌ OTP sending failed - stopping tests")
+                return False
+            
+            if not self.test_verify_otp(test_email, "email", otp_code):
+                print("❌ OTP verification failed - stopping tests")
+                return False
         
         # Test 3: User Profile Operations
         print("\n👤 Testing User Profile Operations...")
@@ -470,7 +477,25 @@ class SheshAAPITester:
         business_id = self.test_create_business()
         self.test_get_my_businesses()
         
-        # Test 5: Service Discovery
+        # Test 5: NEW OFFERS FUNCTIONALITY
+        print("\n🎯 Testing NEW Offers Functionality...")
+        if business_id:
+            # Create offers
+            percentage_offer_id = self.test_create_offer(business_id)
+            fixed_amount_offer_id = self.test_create_fixed_amount_offer(business_id)
+            
+            # Test offer retrieval
+            self.test_get_business_offers(business_id)
+            self.test_get_my_offers()
+            self.test_nearby_offers()
+            
+            # Test offer deactivation
+            if percentage_offer_id:
+                self.test_deactivate_offer(percentage_offer_id)
+        else:
+            print("⚠️ Skipping offers tests - no business created")
+        
+        # Test 6: Service Discovery
         print("\n🔍 Testing Service Discovery...")
         self.test_discover_nearby()
         
