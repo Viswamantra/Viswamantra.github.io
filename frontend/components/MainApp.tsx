@@ -36,14 +36,19 @@ const MainApp = () => {
       </View>
       
       {/* Custom Tab Bar */}
-      <View style={styles.tabBar}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.tabBarContainer}
+        contentContainerStyle={styles.tabBar}
+      >
         <TouchableOpacity
           style={[styles.tab, activeTab === 'customer' && styles.activeTab]}
           onPress={() => setActiveTab('customer')}
         >
           <Ionicons
             name={activeTab === 'customer' ? 'storefront' : 'storefront-outline'}
-            size={24}
+            size={20}
             color={activeTab === 'customer' ? '#007AFF' : '#666'}
           />
           <Text style={[styles.tabText, activeTab === 'customer' && styles.activeTabText]}>
@@ -57,11 +62,25 @@ const MainApp = () => {
         >
           <Ionicons
             name={activeTab === 'merchant' ? 'business' : 'business-outline'}
-            size={24}
+            size={20}
             color={activeTab === 'merchant' ? '#007AFF' : '#666'}
           />
           <Text style={[styles.tabText, activeTab === 'merchant' && styles.activeTabText]}>
             Merchant
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'admin' && styles.activeTab]}
+          onPress={() => setActiveTab('admin')}
+        >
+          <Ionicons
+            name={activeTab === 'admin' ? 'shield' : 'shield-outline'}
+            size={20}
+            color={activeTab === 'admin' ? '#007AFF' : '#666'}
+          />
+          <Text style={[styles.tabText, activeTab === 'admin' && styles.activeTabText]}>
+            Admin
           </Text>
         </TouchableOpacity>
 
@@ -71,14 +90,14 @@ const MainApp = () => {
         >
           <Ionicons
             name={activeTab === 'profile' ? 'person' : 'person-outline'}
-            size={24}
+            size={20}
             color={activeTab === 'profile' ? '#007AFF' : '#666'}
           />
           <Text style={[styles.tabText, activeTab === 'profile' && styles.activeTabText]}>
             Profile
           </Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
