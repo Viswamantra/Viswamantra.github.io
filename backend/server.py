@@ -500,8 +500,11 @@ async def get_my_offers(current_user: dict = Depends(get_current_user)):
         "is_active": True
     }).to_list(100)
     
+    # Clean businesses first to remove ObjectId
+    clean_businesses = clean_mongo_docs(businesses)
+    business_map = {b["id"]: b for b in clean_businesses}
+    
     # Add business info to each offer
-    business_map = {b["id"]: b for b in businesses}
     for offer in offers:
         if offer["business_id"] in business_map:
             offer["business_info"] = business_map[offer["business_id"]]
