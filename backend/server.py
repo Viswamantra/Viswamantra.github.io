@@ -545,8 +545,11 @@ async def get_nearby_offers(
             "valid_until": {"$gt": datetime.utcnow()}
         }).to_list(1000)
         
+        # Clean nearby businesses first to remove ObjectId
+        clean_nearby_businesses = clean_mongo_docs(nearby_businesses)
+        business_map = {b["id"]: b for b in clean_nearby_businesses}
+        
         # Add business info and distance to offers
-        business_map = {b["id"]: b for b in nearby_businesses}
         for offer in offers:
             if offer["business_id"] in business_map:
                 business_info = business_map[offer["business_id"]]
