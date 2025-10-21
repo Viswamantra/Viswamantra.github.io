@@ -181,7 +181,7 @@ const ProfileScreen = () => {
             </View>
             <View style={styles.infoItem}>
               <Ionicons name="call" size={20} color="#007AFF" />
-              <Text style={styles.infoText}>Support: +919182653234</Text>
+              <Text style={styles.infoText}>Support: +917386361725</Text>
             </View>
             <View style={styles.infoItem}>
               <Ionicons name="code" size={20} color="#007AFF" />
