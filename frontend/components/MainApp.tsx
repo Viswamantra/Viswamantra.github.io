@@ -110,20 +110,25 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  tabBar: {
-    flexDirection: 'row',
+  tabBarContainer: {
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
+    maxHeight: 80,
+  },
+  tabBar: {
+    flexDirection: 'row',
     paddingBottom: 20,
     paddingTop: 8,
     paddingHorizontal: 16,
+    alignItems: 'center',
   },
   tab: {
-    flex: 1,
     alignItems: 'center',
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
+    marginRight: 8,
+    minWidth: 80,
   },
   activeTab: {
     backgroundColor: '#f0f7ff',
