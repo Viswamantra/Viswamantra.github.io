@@ -11,7 +11,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigation } from '@react-navigation/native';
 
 const CATEGORIES = [
   { id: 'food', name: 'Food & Restaurants', icon: 'restaurant', color: '#FF6B6B' },
@@ -22,7 +21,6 @@ const CATEGORIES = [
 const ProfileScreen = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { user, logout, updatePreferences } = useAuth();
-  const navigation = useNavigation();
 
   const handleLogout = () => {
     Alert.alert(
@@ -35,7 +33,7 @@ const ProfileScreen = () => {
           style: 'destructive',
           onPress: async () => {
             await logout();
-            navigation.navigate('Auth' as never);
+            // App will automatically show auth screen due to state change
           }
         },
       ]
@@ -177,7 +175,7 @@ const ProfileScreen = () => {
           <View style={styles.infoCard}>
             <View style={styles.infoItem}>
               <Ionicons name="information-circle" size={20} color="#007AFF" />
-              <Text style={styles.infoText}>SheshA - Discover services near you</Text>
+              <Text style={styles.infoText}>OshirO - Discover services near you</Text>
             </View>
             <View style={styles.infoItem}>
               <Ionicons name="call" size={20} color="#007AFF" />

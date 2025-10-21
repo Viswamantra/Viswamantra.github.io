@@ -24,13 +24,13 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
-app = FastAPI(title="SheshA API", description="Location-based service discovery app")
+app = FastAPI(title="OshirO API", description="Location-based service discovery app")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
 # JWT Secret key (in production, this should be in env variables)
-SECRET_KEY = "shesha_secret_key_change_in_production"
+SECRET_KEY = "oshiro_secret_key_change_in_production"
 ALGORITHM = "HS256"
 
 # Pydantic Models
@@ -222,9 +222,9 @@ async def send_otp(request: SendOTPRequest):
         
         # Mock SMS/Email sending (in production, integrate with Twilio/SMTP)
         if request.contact_type == "phone":
-            print(f"📱 Mock SMS to {request.contact}: Your SheshA OTP is {otp_code}")
+            print(f"📱 Mock SMS to {request.contact}: Your OshirO OTP is {otp_code}")
         else:
-            print(f"📧 Mock Email to {request.contact}: Your SheshA OTP is {otp_code}")
+            print(f"📧 Mock Email to {request.contact}: Your OshirO OTP is {otp_code}")
         
         return {
             "success": True,
@@ -453,7 +453,7 @@ async def get_business_categories():
 # Root route
 @api_router.get("/")
 async def root():
-    return {"message": "SheshA API - Location-based service discovery", "version": "1.0.0"}
+    return {"message": "OshirO API - Location-based service discovery", "version": "1.0.0"}
 
 # Health check
 @api_router.get("/health")

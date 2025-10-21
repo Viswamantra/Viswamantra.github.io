@@ -14,7 +14,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-// import { useNavigation } from '@react-navigation/native';
 
 const AuthScreen = () => {
   const [step, setStep] = useState<'method' | 'input' | 'verify'>('method');
@@ -25,7 +24,6 @@ const AuthScreen = () => {
   const [demoOTP, setDemoOTP] = useState<string>('');
   
   const { sendOTP, verifyOTP, login } = useAuth();
-  // const navigation = useNavigation();
 
   const handleMethodSelect = (method: 'phone' | 'email') => {
     setAuthMethod(method);
@@ -40,7 +38,7 @@ const AuthScreen = () => {
 
     // Basic validation
     if (authMethod === 'phone' && !contact.startsWith('+')) {
-      Alert.alert('Error', 'Please enter phone number with country code (e.g., +919182653234)');
+      Alert.alert('Error', 'Please enter phone number with country code (e.g., +917386361725)');
       return;
     }
 
@@ -158,7 +156,7 @@ const AuthScreen = () => {
         />
         <TextInput
           style={styles.input}
-          placeholder={authMethod === 'phone' ? '+919182653234' : 'your.email@example.com'}
+          placeholder={authMethod === 'phone' ? '+917386361725' : 'your.email@example.com'}
           value={contact}
           onChangeText={setContact}
           keyboardType={authMethod === 'phone' ? 'phone-pad' : 'email-address'}

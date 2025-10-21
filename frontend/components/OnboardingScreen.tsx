@@ -11,7 +11,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-// import { useNavigation } from '@react-navigation/native';
 import * as Location from 'expo-location';
 
 const CATEGORIES = [
@@ -30,7 +29,6 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const [loading, setLoading] = useState(false);
   
   const { updatePreferences, updateLocation, user } = useAuth();
-  const navigation = useNavigation();
 
   const togglePreference = (categoryId: string) => {
     setSelectedPreferences(prev => 
@@ -68,7 +66,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
           'Permission Required',
           'Location permission is required to discover services near you. You can enable it later in settings.',
           [
-            { text: 'Skip for now', onPress: () => navigation.navigate('Main' as never) },
+            { text: 'Skip for now', onPress: () => onComplete() },
             { text: 'Try again', onPress: requestLocationPermission },
           ]
         );
@@ -86,12 +84,12 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
         location.coords.longitude
       );
 
-      // Navigate to main app
-      navigation.navigate('Main' as never);
+      // Complete onboarding
+      onComplete();
       
     } catch (error: any) {
       Alert.alert('Error', 'Unable to get location. You can set it manually later.');
-      navigation.navigate('Main' as never);
+      onComplete();
     } finally {
       setLoading(false);
     }
@@ -103,7 +101,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
         <View style={styles.logoContainer}>
           <Ionicons name="location" size={48} color="#007AFF" />
         </View>
-        <Text style={styles.welcomeTitle}>Welcome to SheshA!</Text>
+        <Text style={styles.welcomeTitle}>Welcome to OshirO!</Text>
         <Text style={styles.welcomeSubtitle}>
           Discover amazing food, clothing, and spa services right around you
         </Text>
@@ -192,7 +190,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
         </View>
         <Text style={styles.title}>Enable Location</Text>
         <Text style={styles.subtitle}>
-          Allow SheshA to access your location to discover services near you
+          Allow OshirO to access your location to discover services near you
         </Text>
       </View>
 
@@ -226,7 +224,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
         
         <TouchableOpacity 
           style={styles.skipButton}
-          onPress={() => navigation.navigate('Main' as never)}
+          onPress={() => onComplete()}
         >
           <Text style={styles.skipButtonText}>Skip for now</Text>
         </TouchableOpacity>
