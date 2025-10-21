@@ -11,7 +11,7 @@ import ProfileScreen from './ProfileScreen';
 type TabType = 'discover' | 'offers' | 'business' | 'profile';
 
 const MainApp = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('discover');
+  const [activeTab, setActiveTab] = useState<TabType>('offers');
   const { user } = useAuth();
 
   const renderContent = () => {
