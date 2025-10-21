@@ -685,6 +685,288 @@ async def discover_nearby_services(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Payment Routes
+@api_router.post("/payments/create-order")
+async def create_payment_order(
+    payment_data: PaymentCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create payment order for offer/service purchase"""
+    try:
+        # Get business and offer details
+        business = await db.businesses.find_one({"id": payment_data.business_id})
+        if not business:
+            raise HTTPException(status_code=404, detail="Business not found")
+        
+        offer = None
+        if payment_data.offer_id:
+            offer = await db.offers.find_one({"id": payment_data.offer_id})
+            if not offer:
+                raise HTTPException(status_code=404, detail="Offer not found")
+        
+        # Calculate amounts
+        total_amount = payment_data.amount
+        oshiro_fee = total_amount * 0.02  # 2% fee
+        merchant_amount = total_amount - oshiro_fee
+        
+        # Create payment order
+        payment_order = PaymentOrder(
+            customer_id=current_user["id"],
+            merchant_id=business["owner_id"],
+            business_id=payment_data.business_id,
+            offer_id=payment_data.offer_id,
+            amount=total_amount,
+            oshiro_fee=oshiro_fee,
+            merchant_amount=merchant_amount,
+            payment_method=payment_data.payment_method
+        )
+        
+        await db.payment_orders.insert_one(payment_order.dict())
+        
+        # Mock payment gateway response (In real implementation, integrate with actual gateways)
+        mock_order_id = f"order_{random.randint(100000, 999999)}"
+        
+        return {
+            "order_id": payment_order.id,
+            "mock_payment_id": mock_order_id,
+            "amount": total_amount,
+            "oshiro_fee": oshiro_fee,
+            "merchant_amount": merchant_amount,
+            "payment_method": payment_data.payment_method,
+            "qr_code_data": f"upi://pay?pa=7386361725@paytm&pn=OshirO&am={total_amount}&cu=INR&tn=Payment for {business['business_name']}"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/payments/{order_id}/complete")
+async def complete_payment(
+    order_id: str,
+    payment_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Complete payment and create purchase record"""
+    try:
+        # Get payment order
+        payment_order = await db.payment_orders.find_one({"id": order_id, "customer_id": current_user["id"]})
+        if not payment_order:
+            raise HTTPException(status_code=404, detail="Payment order not found")
+        
+        # Update payment order status
+        await db.payment_orders.update_one(
+            {"id": order_id},
+            {"$set": {
+                "payment_status": "completed",
+                "payment_id": payment_id,
+                "completed_at": datetime.utcnow()
+            }}
+        )
+        
+        # Create purchase record
+        purchase = Purchase(
+            customer_id=current_user["id"],
+            merchant_id=payment_order["merchant_id"],
+            business_id=payment_order["business_id"],
+            offer_id=payment_order.get("offer_id"),
+            payment_order_id=order_id,
+            final_amount=payment_order["amount"],
+            oshiro_revenue=payment_order["oshiro_fee"]
+        )
+        
+        # Add discount info if offer was used
+        if payment_order.get("offer_id"):
+            offer = await db.offers.find_one({"id": payment_order["offer_id"]})
+            if offer:
+                purchase.original_amount = offer.get("original_price", payment_order["amount"])
+                purchase.discount_amount = purchase.original_amount - payment_order["amount"] if purchase.original_amount else 0
+                
+                # Update offer usage
+                await db.offers.update_one(
+                    {"id": payment_order["offer_id"]},
+                    {"$inc": {"current_uses": 1}}
+                )
+        
+        await db.purchases.insert_one(purchase.dict())
+        
+        # Send WhatsApp notification (Mock)
+        await send_whatsapp_notification(
+            current_user.get("phone_number", ""),
+            f"🎉 Payment successful! ₹{payment_order['amount']} paid to {payment_order['business_id']}. Thank you for using OshirO!",
+            "payment_success"
+        )
+        
+        return {
+            "success": True,
+            "purchase_id": purchase.id,
+            "message": "Payment completed successfully"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# WhatsApp Notification Routes
+async def send_whatsapp_notification(phone: str, message: str, message_type: str):
+    """Send WhatsApp notification (Mock implementation)"""
+    try:
+        notification = WhatsAppNotification(
+            recipient_phone=phone,
+            message=message,
+            message_type=message_type
+        )
+        
+        await db.whatsapp_notifications.insert_one(notification.dict())
+        
+        # Mock WhatsApp sending (In production, integrate with WhatsApp Business API)
+        print(f"📱 Mock WhatsApp to {phone}: {message}")
+        
+        return {"status": "sent", "notification_id": notification.id}
+        
+    except Exception as e:
+        print(f"WhatsApp notification failed: {e}")
+        return {"status": "failed"}
+
+@api_router.post("/notifications/send-discount-alert")
+async def send_discount_alert(
+    offer_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Send discount alert to nearby users"""
+    try:
+        # Get offer details
+        offer = await db.offers.find_one({"id": offer_id})
+        if not offer:
+            raise HTTPException(status_code=404, detail="Offer not found")
+        
+        # Get business details
+        business = await db.businesses.find_one({"id": offer["business_id"]})
+        if not business or business["owner_id"] != current_user["id"]:
+            raise HTTPException(status_code=403, detail="Not authorized")
+        
+        # Get nearby users (within 5km)
+        nearby_users = await db.users.find({
+            "location": {"$exists": True},
+            "preferences": {"$in": [business["category"]]}
+        }).to_list(100)
+        
+        notifications_sent = 0
+        for user in nearby_users:
+            if user.get("phone_number"):
+                distance = calculate_distance(
+                    business["location"]["latitude"],
+                    business["location"]["longitude"],
+                    user["location"]["latitude"],
+                    user["location"]["longitude"]
+                )
+                
+                if distance <= 5000:  # 5km radius
+                    discount_text = f"{offer['discount_value']}%" if offer["discount_type"] == "percentage" else f"₹{offer['discount_value']}"
+                    message = f"🎁 Exciting offer near you! {discount_text} OFF at {business['business_name']}. {offer['title']} - {offer['description']}. Visit now!"
+                    
+                    await send_whatsapp_notification(
+                        user["phone_number"],
+                        message,
+                        "discount_alert"
+                    )
+                    notifications_sent += 1
+        
+        return {
+            "success": True,
+            "notifications_sent": notifications_sent,
+            "message": f"Discount alert sent to {notifications_sent} nearby users"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Admin Panel Routes (OshirO Team Only)
+@api_router.get("/admin/stats")
+async def get_admin_stats(admin_key: str):
+    """Get comprehensive admin statistics (OshirO team only)"""
+    if admin_key != "oshiro_admin_2024":  # Simple admin authentication
+        raise HTTPException(status_code=403, detail="Invalid admin access")
+    
+    try:
+        # Get counts
+        total_customers = await db.users.count_documents({"user_type": "customer"})
+        total_merchants = await db.users.count_documents({"user_type": "business_owner"})
+        total_businesses = await db.businesses.count_documents({})
+        total_offers = await db.offers.count_documents({"is_active": True})
+        total_purchases = await db.purchases.count_documents({})
+        
+        # Calculate revenue metrics
+        purchases = await db.purchases.find({}).to_list(10000)
+        total_revenue = sum([p.get("oshiro_revenue", 0) for p in purchases])
+        total_sales_volume = sum([p.get("final_amount", 0) for p in purchases])
+        total_discounts = sum([p.get("discount_amount", 0) for p in purchases if p.get("discount_amount")])
+        
+        # Active users today
+        today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        active_users_today = await db.purchases.count_documents({
+            "purchase_date": {"$gte": today}
+        })
+        
+        # Popular categories
+        category_stats = {}
+        businesses = await db.businesses.find({}).to_list(1000)
+        for business in businesses:
+            category = business.get("category", "other")
+            category_stats[category] = category_stats.get(category, 0) + 1
+        
+        popular_categories = [
+            {"category": k, "count": v} for k, v in 
+            sorted(category_stats.items(), key=lambda x: x[1], reverse=True)
+        ]
+        
+        return AdminStats(
+            total_customers=total_customers,
+            total_merchants=total_merchants,
+            total_businesses=total_businesses,
+            total_offers=total_offers,
+            total_purchases=total_purchases,
+            total_revenue=total_revenue,
+            total_sales_volume=total_sales_volume,
+            total_discounts_given=total_discounts,
+            active_users_today=active_users_today,
+            popular_categories=popular_categories
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/admin/recent-activity")
+async def get_recent_activity(admin_key: str, limit: int = 50):
+    """Get recent purchases and activities"""
+    if admin_key != "oshiro_admin_2024":
+        raise HTTPException(status_code=403, detail="Invalid admin access")
+    
+    try:
+        # Recent purchases
+        purchases = await db.purchases.find({}).sort("purchase_date", -1).limit(limit).to_list(limit)
+        
+        # Add customer and business info
+        for purchase in purchases:
+            customer = await db.users.find_one({"id": purchase["customer_id"]})
+            business = await db.businesses.find_one({"id": purchase["business_id"]})
+            
+            purchase["customer_info"] = {
+                "phone": customer.get("phone_number") if customer else "Unknown"
+            }
+            purchase["business_info"] = {
+                "name": business.get("business_name") if business else "Unknown",
+                "category": business.get("category") if business else "Unknown"
+            }
+        
+        return {
+            "recent_purchases": clean_mongo_docs(purchases),
+            "total_oshiro_revenue_today": sum([
+                p.get("oshiro_revenue", 0) for p in purchases 
+                if p.get("purchase_date", datetime.min).date() == datetime.utcnow().date()
+            ])
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/businesses/categories")
 async def get_business_categories():
     """Get available business categories"""
