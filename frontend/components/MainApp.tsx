@@ -15,16 +15,14 @@ const MainApp = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'discover':
-        return <DiscoverScreen />;
-      case 'offers':
-        return <OffersScreen />;
-      case 'business':
-        return <BusinessScreen />;
+      case 'customer':
+        return <CustomerScreen />;
+      case 'merchant':
+        return <MerchantScreen />;
       case 'profile':
         return <ProfileScreen />;
       default:
-        return <OffersScreen />;
+        return <CustomerScreen />;
     }
   };
 
