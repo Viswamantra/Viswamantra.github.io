@@ -35,48 +35,32 @@ const MainApp = () => {
       {/* Custom Tab Bar */}
       <View style={styles.tabBar}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'discover' && styles.activeTab]}
-          onPress={() => setActiveTab('discover')}
+          style={[styles.tab, activeTab === 'customer' && styles.activeTab]}
+          onPress={() => setActiveTab('customer')}
         >
           <Ionicons
-            name={activeTab === 'discover' ? 'location' : 'location-outline'}
+            name={activeTab === 'customer' ? 'storefront' : 'storefront-outline'}
             size={24}
-            color={activeTab === 'discover' ? '#007AFF' : '#666'}
+            color={activeTab === 'customer' ? '#007AFF' : '#666'}
           />
-          <Text style={[styles.tabText, activeTab === 'discover' && styles.activeTabText]}>
-            Discover
+          <Text style={[styles.tabText, activeTab === 'customer' && styles.activeTabText]}>
+            Customer
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'offers' && styles.activeTab]}
-          onPress={() => setActiveTab('offers')}
+          style={[styles.tab, activeTab === 'merchant' && styles.activeTab]}
+          onPress={() => setActiveTab('merchant')}
         >
           <Ionicons
-            name={activeTab === 'offers' ? 'gift' : 'gift-outline'}
+            name={activeTab === 'merchant' ? 'business' : 'business-outline'}
             size={24}
-            color={activeTab === 'offers' ? '#007AFF' : '#666'}
+            color={activeTab === 'merchant' ? '#007AFF' : '#666'}
           />
-          <Text style={[styles.tabText, activeTab === 'offers' && styles.activeTabText]}>
-            Offers
+          <Text style={[styles.tabText, activeTab === 'merchant' && styles.activeTabText]}>
+            Merchant
           </Text>
         </TouchableOpacity>
-
-        {user?.user_type === 'business_owner' && (
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'business' && styles.activeTab]}
-            onPress={() => setActiveTab('business')}
-          >
-            <Ionicons
-              name={activeTab === 'business' ? 'business' : 'business-outline'}
-              size={24}
-              color={activeTab === 'business' ? '#007AFF' : '#666'}
-            />
-            <Text style={[styles.tabText, activeTab === 'business' && styles.activeTabText]}>
-              Business
-            </Text>
-          </TouchableOpacity>
-        )}
 
         <TouchableOpacity
           style={[styles.tab, activeTab === 'profile' && styles.activeTab]}
