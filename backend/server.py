@@ -34,6 +34,36 @@ SECRET_KEY = "oshiro_secret_key_change_in_production"
 ALGORITHM = "HS256"
 
 # Pydantic Models
+class Offer(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    business_id: str
+    title: str
+    description: str
+    discount_type: str  # "percentage", "fixed_amount"
+    discount_value: float  # e.g., 20 for 20% or 100 for $100 off
+    original_price: Optional[float] = None
+    discounted_price: Optional[float] = None
+    image_base64: Optional[str] = None  # business photo in base64
+    valid_from: datetime = Field(default_factory=datetime.utcnow)
+    valid_until: datetime
+    max_uses: Optional[int] = None  # maximum number of uses
+    current_uses: int = 0
+    is_active: bool = True
+    for_oshiro_users_only: bool = True  # instant discount for OshirO users
+    terms_conditions: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class OfferCreate(BaseModel):
+    title: str
+    description: str
+    discount_type: str
+    discount_value: float
+    original_price: Optional[float] = None
+    image_base64: Optional[str] = None
+    valid_until: str  # ISO format date string
+    max_uses: Optional[int] = None
+    terms_conditions: Optional[str] = None
+
 class User(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     phone_number: Optional[str] = None
