@@ -3,12 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-import DiscoverScreen from './DiscoverScreen';
-import BusinessScreen from './BusinessScreen';
-import OffersScreen from './OffersScreen';
+import CustomerScreen from './CustomerScreen';
+import MerchantScreen from './MerchantScreen';
 import ProfileScreen from './ProfileScreen';
 
-type TabType = 'discover' | 'offers' | 'business' | 'profile';
+type TabType = 'customer' | 'merchant' | 'profile';
 
 const MainApp = () => {
   const [activeTab, setActiveTab] = useState<TabType>('offers');
