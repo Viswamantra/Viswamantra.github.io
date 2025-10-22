@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-SheshA Backend API Testing Suite
-Tests all backend endpoints for the location-based service discovery app
+OshirO Backend API Testing Script
+Focus: New Admin Endpoints + Quick Smoke Test
 """
 
 import requests
 import json
-import time
 from datetime import datetime
-from typing import Dict, Optional
 
-class SheshAAPITester:
+# Backend URL from frontend/.env
+BACKEND_URL = "https://shop-nearby-3.preview.emergentagent.com/api"
+ADMIN_KEY = "oshiro_admin_2024"
+
+class OshirOAPITester:
     def __init__(self, base_url: str):
         self.base_url = base_url.rstrip('/')
-        self.auth_token = None
-        self.user_id = None
         self.test_results = []
         
     def log_test(self, test_name: str, success: bool, details: str = "", response_data: dict = None):
