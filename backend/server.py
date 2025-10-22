@@ -967,6 +967,82 @@ async def get_recent_activity(admin_key: str, limit: int = 50):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/admin/customers")
+async def get_all_customers(admin_key: str, limit: int = 100, skip: int = 0):
+    """Get all customers with phone numbers (OshirO team only)"""
+    if admin_key != "oshiro_admin_2024":
+        raise HTTPException(status_code=403, detail="Invalid admin access")
+    
+    try:
+        customers = await db.users.find({"user_type": "customer"}).skip(skip).limit(limit).to_list(limit)
+        total_count = await db.users.count_documents({"user_type": "customer"})
+        
+        customer_list = []
+        for customer in customers:
+            customer_list.append({
+                "id": customer.get("id"),
+                "phone_number": customer.get("phone_number"),
+                "email": customer.get("email"),
+                "name": customer.get("name"),
+                "preferences": customer.get("preferences", []),
+                "created_at": customer.get("created_at"),
+                "is_phone_verified": customer.get("is_phone_verified", False),
+                "is_email_verified": customer.get("is_email_verified", False)
+            })
+        
+        return {
+            "total": total_count,
+            "customers": customer_list,
+            "showing": len(customer_list)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/admin/merchants")
+async def get_all_merchants(admin_key: str, limit: int = 100, skip: int = 0):
+    """Get all merchants with phone numbers and business details (OshirO team only)"""
+    if admin_key != "oshiro_admin_2024":
+        raise HTTPException(status_code=403, detail="Invalid admin access")
+    
+    try:
+        merchants = await db.users.find({"user_type": "business_owner"}).skip(skip).limit(limit).to_list(limit)
+        total_count = await db.users.count_documents({"user_type": "business_owner"})
+        
+        merchant_list = []
+        for merchant in merchants:
+            # Get businesses owned by merchant
+            businesses = await db.businesses.find({"owner_id": merchant.get("id")}).to_list(10)
+            
+            merchant_list.append({
+                "id": merchant.get("id"),
+                "phone_number": merchant.get("phone_number"),
+                "email": merchant.get("email"),
+                "name": merchant.get("name"),
+                "created_at": merchant.get("created_at"),
+                "is_phone_verified": merchant.get("is_phone_verified", False),
+                "is_email_verified": merchant.get("is_email_verified", False),
+                "businesses": [
+                    {
+                        "id": b.get("id"),
+                        "name": b.get("business_name"),
+                        "category": b.get("category"),
+                        "location": b.get("location"),
+                        "contact": b.get("contact_number")
+                    } for b in businesses
+                ],
+                "total_businesses": len(businesses)
+            })
+        
+        return {
+            "total": total_count,
+            "merchants": merchant_list,
+            "showing": len(merchant_list)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/businesses/categories")
 async def get_business_categories():
     """Get available business categories"""
