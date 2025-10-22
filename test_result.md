@@ -291,6 +291,42 @@ backend:
           agent: "testing"
           comment: "✅ PUT /api/offers/{offer_id}/deactivate working correctly - validates business ownership and properly deactivates offers. Deactivated offers no longer appear in active offer listings."
 
+  - task: "Admin Customers List Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ GET /api/admin/customers?admin_key=oshiro_admin_2024 working correctly. Returns list of customers with id, phone_number, email, name, preferences, verification status. Found 3 customers in database. Data structure validated."
+
+  - task: "Admin Merchants List Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ GET /api/admin/merchants?admin_key=oshiro_admin_2024 working correctly. Returns list of merchants with id, phone_number, name, businesses array with details (id, name, category, location). Found 3 merchants in database. Business data structure validated."
+
+  - task: "Admin Security Validation"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Admin endpoint security working correctly. Invalid admin keys are properly rejected with 403 Forbidden status. Admin authentication mechanism secure."
+
 frontend:
   - task: "Fix ScrollView Import Issue"
     implemented: true
