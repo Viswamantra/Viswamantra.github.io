@@ -529,6 +529,39 @@ async def create_offer(
     )
     
     await db.offers.insert_one(offer.dict())
+    
+    # AUTO-SEND WhatsApp notifications to nearby customers
+    try:
+        nearby_users = await db.users.find({
+            "location": {"$exists": True},
+            "preferences": {"$in": [business["category"]]}
+        }).to_list(100)
+        
+        notifications_sent = 0
+        for user in nearby_users:
+            if user.get("phone_number"):
+                distance = calculate_distance(
+                    business["location"]["latitude"],
+                    business["location"]["longitude"],
+                    user["location"]["latitude"],
+                    user["location"]["longitude"]
+                )
+                
+                if distance <= 5000:  # 5km radius
+                    discount_text = f"{offer.discount_value}%" if offer.discount_type == "percentage" else f"₹{offer.discount_value}"
+                    message = f"🎁 New offer near you! {discount_text} OFF at {business['business_name']}. {offer.title} - {offer.description}. Visit now!"
+                    
+                    await send_whatsapp_notification(
+                        user["phone_number"],
+                        message,
+                        "discount_alert"
+                    )
+                    notifications_sent += 1
+        
+        print(f"✅ Auto-sent {notifications_sent} WhatsApp notifications for new offer")
+    except Exception as e:
+        print(f"⚠️ WhatsApp auto-notification failed: {e}")
+    
     return offer
 
 @api_router.get("/businesses/{business_id}/offers")
