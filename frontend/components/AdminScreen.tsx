@@ -785,6 +785,147 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 16,
   },
+  tabBar: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    backgroundColor: '#fff',
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 6,
+  },
+  activeTab: {
+    borderBottomWidth: 3,
+    borderBottomColor: '#007AFF',
+  },
+  tabText: {
+    fontSize: 13,
+    color: '#666',
+    fontWeight: '500',
+  },
+  activeTabText: {
+    color: '#007AFF',
+    fontWeight: '600',
+  },
+  listContainer: {
+    padding: 20,
+  },
+  listHeader: {
+    marginBottom: 20,
+  },
+  listTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 4,
+  },
+  listSubtitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+  listItem: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  listItemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  listItemInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  listItemName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 4,
+  },
+  listItemPhone: {
+    fontSize: 15,
+    color: '#007AFF',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  listItemPrefs: {
+    fontSize: 13,
+    color: '#666',
+  },
+  verificationBadges: {
+    flexDirection: 'row',
+    marginTop: 8,
+    gap: 8,
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0fff4',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  verifiedText: {
+    fontSize: 12,
+    color: '#4CAF50',
+    fontWeight: '500',
+  },
+  merchantItem: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  merchantBusinessCount: {
+    fontSize: 13,
+    color: '#4CAF50',
+    fontWeight: '600',
+  },
+  businessList: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  businessCard: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  businessName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 4,
+  },
+  businessCategory: {
+    fontSize: 13,
+    color: '#007AFF',
+    textTransform: 'capitalize',
+    marginBottom: 2,
+  },
+  businessContact: {
+    fontSize: 13,
+    color: '#666',
+  },
+  emptyList: {
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyListText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 16,
+  },
 });
 
 export default AdminScreen;
