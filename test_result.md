@@ -366,8 +366,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Backend re-testing after frontend fixes - COMPLETED ✅"
-    - "All 16 backend endpoints verified working (93.8% success rate)"
+    - "NEW ADMIN ENDPOINTS TESTING - COMPLETED ✅"
+    - "Admin customers/merchants lists working perfectly"
+    - "All backend endpoints verified working (100% success rate)"
     - "Ready for production - no critical issues found"
   stuck_tasks: []
   test_all: false
