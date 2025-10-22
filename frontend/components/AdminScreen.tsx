@@ -205,12 +205,45 @@ const AdminScreen = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Tab Navigation */}
+      <View style={styles.tabBar}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'dashboard' && styles.activeTab]}
+          onPress={() => setActiveTab('dashboard')}
+        >
+          <Ionicons name="stats-chart" size={20} color={activeTab === 'dashboard' ? '#007AFF' : '#666'} />
+          <Text style={[styles.tabText, activeTab === 'dashboard' && styles.activeTabText]}>Dashboard</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'customers' && styles.activeTab]}
+          onPress={() => {
+            setActiveTab('customers');
+            loadCustomers();
+          }}
+        >
+          <Ionicons name="people" size={20} color={activeTab === 'customers' ? '#007AFF' : '#666'} />
+          <Text style={[styles.tabText, activeTab === 'customers' && styles.activeTabText]}>Customers</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'merchants' && styles.activeTab]}
+          onPress={() => {
+            setActiveTab('merchants');
+            loadMerchants();
+          }}
+        >
+          <Ionicons name="business" size={20} color={activeTab === 'merchants' ? '#007AFF' : '#666'} />
+          <Text style={[styles.tabText, activeTab === 'merchants' && styles.activeTabText]}>Merchants</Text>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView
         style={styles.content}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        {activeTab === 'dashboard' && (
+        <View>
         {/* Key Metrics */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Platform Overview</Text>
