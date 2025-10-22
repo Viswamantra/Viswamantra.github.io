@@ -89,6 +89,32 @@ const AdminScreen = () => {
     }
   };
 
+  const loadCustomers = async () => {
+    if (!adminKey) return;
+    
+    try {
+      const response = await axios.get(
+        `${EXPO_PUBLIC_BACKEND_URL}/api/admin/customers?admin_key=${adminKey}&limit=100`
+      );
+      setCustomers(response.data.customers || []);
+    } catch (error) {
+      console.error('Error loading customers:', error);
+    }
+  };
+
+  const loadMerchants = async () => {
+    if (!adminKey) return;
+    
+    try {
+      const response = await axios.get(
+        `${EXPO_PUBLIC_BACKEND_URL}/api/admin/merchants?admin_key=${adminKey}&limit=100`
+      );
+      setMerchants(response.data.merchants || []);
+    } catch (error) {
+      console.error('Error loading merchants:', error);
+    }
+  };
+
   const onRefresh = async () => {
     if (!isAuthenticated) return;
     
