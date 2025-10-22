@@ -400,6 +400,89 @@ const AdminScreen = () => {
             )}
           </View>
         </View>
+        </View>
+        )}
+
+        {/* Customers List */}
+        {activeTab === 'customers' && (
+          <View style={styles.listContainer}>
+            <View style={styles.listHeader}>
+              <Text style={styles.listTitle}>All Customers ({customers.length})</Text>
+              <Text style={styles.listSubtitle}>View customer phone numbers and details</Text>
+            </View>
+            {customers.map((customer, index) => (
+              <View key={customer.id || index} style={styles.listItem}>
+                <View style={styles.listItemHeader}>
+                  <Ionicons name="person-circle" size={32} color="#007AFF" />
+                  <View style={styles.listItemInfo}>
+                    <Text style={styles.listItemName}>{customer.name || 'Customer'}</Text>
+                    <Text style={styles.listItemPhone}>{customer.phone_number || customer.email}</Text>
+                    {customer.preferences && customer.preferences.length > 0 && (
+                      <Text style={styles.listItemPrefs}>
+                        Interests: {customer.preferences.join(', ')}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+                <View style={styles.verificationBadges}>
+                  {customer.is_phone_verified && (
+                    <View style={styles.verifiedBadge}>
+                      <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
+                      <Text style={styles.verifiedText}>Phone</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            ))}
+            {customers.length === 0 && (
+              <View style={styles.emptyList}>
+                <Ionicons name="people-outline" size={64} color="#ccc" />
+                <Text style={styles.emptyListText}>No customers yet</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Merchants List */}
+        {activeTab === 'merchants' && (
+          <View style={styles.listContainer}>
+            <View style={styles.listHeader}>
+              <Text style={styles.listTitle}>All Merchants ({merchants.length})</Text>
+              <Text style={styles.listSubtitle}>View merchant details and businesses</Text>
+            </View>
+            {merchants.map((merchant, index) => (
+              <View key={merchant.id || index} style={styles.merchantItem}>
+                <View style={styles.listItemHeader}>
+                  <Ionicons name="business" size={32} color="#4CAF50" />
+                  <View style={styles.listItemInfo}>
+                    <Text style={styles.listItemName}>{merchant.name || 'Merchant'}</Text>
+                    <Text style={styles.listItemPhone}>{merchant.phone_number || merchant.email}</Text>
+                    <Text style={styles.merchantBusinessCount}>
+                      {merchant.total_businesses} business(es)
+                    </Text>
+                  </View>
+                </View>
+                {merchant.businesses && merchant.businesses.length > 0 && (
+                  <View style={styles.businessList}>
+                    {merchant.businesses.map((business: any, idx: number) => (
+                      <View key={idx} style={styles.businessCard}>
+                        <Text style={styles.businessName}>• {business.name}</Text>
+                        <Text style={styles.businessCategory}>{business.category}</Text>
+                        <Text style={styles.businessContact}>{business.contact}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+            ))}
+            {merchants.length === 0 && (
+              <View style={styles.emptyList}>
+                <Ionicons name="business-outline" size={64} color="#ccc" />
+                <Text style={styles.emptyListText}>No merchants yet</Text>
+              </View>
+            )}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
