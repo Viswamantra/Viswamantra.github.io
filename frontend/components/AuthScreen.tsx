@@ -16,12 +16,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 
 const AuthScreen = () => {
-  const [step, setStep] = useState<'method' | 'input' | 'verify'>('method');
-  const [authMethod, setAuthMethod] = useState<'phone' | 'email' | null>(null);
-  const [contact, setContact] = useState('');
+  const [step, setStep] = useState<'input' | 'verify'>('input');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
-  const [demoOTP, setDemoOTP] = useState<string>('');
+  const [showOTP, setShowOTP] = useState(false);
   
   const { sendOTP, verifyOTP, login } = useAuth();
 
