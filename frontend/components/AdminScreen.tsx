@@ -47,6 +47,9 @@ const AdminScreen = () => {
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'customers' | 'merchants'>('dashboard');
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [merchants, setMerchants] = useState<any[]>([]);
 
   const authenticateAdmin = async () => {
     if (!adminKey.trim()) {
