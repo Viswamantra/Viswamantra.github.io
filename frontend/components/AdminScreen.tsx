@@ -988,6 +988,12 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 16,
   },
+  deleteButton: {
+    backgroundColor: '#fef2f2',
+    padding: 8,
+    borderRadius: 8,
+    marginLeft: 8,
+  },
 });
 
 export default AdminScreen;
