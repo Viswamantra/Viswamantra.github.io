@@ -517,6 +517,12 @@ const AdminScreen = () => {
                       {merchant.total_businesses} business(es)
                     </Text>
                   </View>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => deleteMerchant(merchant.id, merchant.name || merchant.phone_number)}
+                  >
+                    <Ionicons name="trash" size={20} color="#f44336" />
+                  </TouchableOpacity>
                 </View>
                 {merchant.businesses && merchant.businesses.length > 0 && (
                   <View style={styles.businessList}>
