@@ -1076,6 +1076,65 @@ async def get_all_merchants(admin_key: str, limit: int = 100, skip: int = 0):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.delete("/admin/customers/{user_id}")
+async def delete_customer(user_id: str, admin_key: str):
+    """Delete a customer record (Admin only)"""
+    if admin_key != "oshiro_admin_2024":
+        raise HTTPException(status_code=403, detail="Invalid admin access")
+    
+    try:
+        # Check if user exists and is a customer
+        user = await db.users.find_one({"id": user_id, "user_type": "customer"})
+        if not user:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        # Delete user record
+        result = await db.users.delete_one({"id": user_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        return {"success": True, "message": f"Customer {user_id} deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/admin/merchants/{user_id}")
+async def delete_merchant(user_id: str, admin_key: str):
+    """Delete a merchant record and all associated businesses (Admin only)"""
+    if admin_key != "oshiro_admin_2024":
+        raise HTTPException(status_code=403, detail="Invalid admin access")
+    
+    try:
+        # Check if user exists and is a merchant
+        user = await db.users.find_one({"id": user_id, "user_type": "business_owner"})
+        if not user:
+            raise HTTPException(status_code=404, detail="Merchant not found")
+        
+        # Delete all businesses owned by this merchant
+        businesses_result = await db.businesses.delete_many({"owner_id": user_id})
+        
+        # Delete all offers from merchant's businesses
+        await db.offers.delete_many({"business_id": {"$in": [b async for b in db.businesses.find({"owner_id": user_id})]}})
+        
+        # Delete merchant user record
+        user_result = await db.users.delete_one({"id": user_id})
+        
+        if user_result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Merchant not found")
+        
+        return {
+            "success": True, 
+            "message": f"Merchant {user_id} and {businesses_result.deleted_count} businesses deleted successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/businesses/categories")
 async def get_business_categories():
     """Get available business categories"""
