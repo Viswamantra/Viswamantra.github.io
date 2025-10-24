@@ -473,6 +473,12 @@ const AdminScreen = () => {
                       </Text>
                     )}
                   </View>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => deleteCustomer(customer.id, customer.name || customer.phone_number)}
+                  >
+                    <Ionicons name="trash" size={20} color="#f44336" />
+                  </TouchableOpacity>
                 </View>
                 <View style={styles.verificationBadges}>
                   {customer.is_phone_verified && (
