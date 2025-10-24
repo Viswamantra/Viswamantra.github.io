@@ -55,11 +55,6 @@ const AuthScreen = () => {
       return;
     }
 
-    if (otpCode !== '1234') {
-      Alert.alert('Error', 'Invalid OTP. Please enter 1234');
-      return;
-    }
-
     setLoading(true);
     try {
       const fullPhone = `+91${phoneNumber}`;
@@ -77,7 +72,7 @@ const AuthScreen = () => {
         await login(result.access_token, userData as any);
       }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to verify OTP');
+      Alert.alert('Error', error.message || 'Invalid OTP. Please enter 1234');
     } finally {
       setLoading(false);
     }
