@@ -115,6 +115,56 @@ const AdminScreen = () => {
     }
   };
 
+  const deleteCustomer = async (customerId: string, customerName: string) => {
+    Alert.alert(
+      'Delete Customer',
+      `Are you sure you want to delete ${customerName || 'this customer'}? This action cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await axios.delete(
+                `${EXPO_PUBLIC_BACKEND_URL}/api/admin/customers/${customerId}?admin_key=${adminKey}`
+              );
+              Alert.alert('Success', 'Customer deleted successfully');
+              loadCustomers();
+            } catch (error: any) {
+              Alert.alert('Error', error.response?.data?.detail || 'Failed to delete customer');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const deleteMerchant = async (merchantId: string, merchantName: string) => {
+    Alert.alert(
+      'Delete Merchant',
+      `Are you sure you want to delete ${merchantName || 'this merchant'}? This will also delete all their businesses and offers. This action cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await axios.delete(
+                `${EXPO_PUBLIC_BACKEND_URL}/api/admin/merchants/${merchantId}?admin_key=${adminKey}`
+              );
+              Alert.alert('Success', 'Merchant and associated businesses deleted successfully');
+              loadMerchants();
+            } catch (error: any) {
+              Alert.alert('Error', error.response?.data?.detail || 'Failed to delete merchant');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const onRefresh = async () => {
     if (!isAuthenticated) return;
     
