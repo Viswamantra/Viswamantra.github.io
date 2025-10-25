@@ -134,28 +134,21 @@ const AdminScreen = () => {
   };
 
   const deleteMerchant = async (merchantId: string, merchantName: string) => {
-    Alert.alert(
-      'Delete Merchant',
-      `Are you sure you want to delete ${merchantName || 'this merchant'}? This will also delete all their businesses and offers. This action cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await axios.delete(
-                `${EXPO_PUBLIC_BACKEND_URL}/api/admin/merchants/${merchantId}?admin_key=${adminKey}`
-              );
-              Alert.alert('Success', 'Merchant and associated businesses deleted successfully');
-              loadMerchants();
-            } catch (error: any) {
-              Alert.alert('Error', error.response?.data?.detail || 'Failed to delete merchant');
-            }
-          }
-        }
-      ]
-    );
+    const confirmed = window.confirm(`Are you sure you want to delete ${merchantName || 'this merchant'}? This will also delete all their businesses and offers. This action cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      console.log('Deleting merchant:', merchantId);
+      const response = await axios.delete(
+        `${EXPO_PUBLIC_BACKEND_URL}/api/admin/merchants/${merchantId}?admin_key=${adminKey}`
+      );
+      console.log('Delete response:', response.data);
+      alert('Merchant and associated businesses deleted successfully!');
+      await loadMerchants();
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      alert(error.response?.data?.detail || 'Failed to delete merchant');
+    }
   };
 
   const onRefresh = async () => {
