@@ -219,8 +219,8 @@ class AdminStats(BaseModel):
 
 # Helper functions
 def generate_otp() -> str:
-    """Generate a 6-digit OTP code for demo purposes"""
-    return ''.join(random.choices(string.digits, k=6))
+    """Generate a fixed OTP code 1234 for demo purposes"""
+    return "1234"
 
 def create_access_token(user_id: str) -> str:
     """Create JWT token for user authentication"""
