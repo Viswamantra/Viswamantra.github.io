@@ -904,6 +904,7 @@ const styles = StyleSheet.create({
   listItemInfo: {
     marginLeft: 12,
     flex: 1,
+    flexShrink: 1,
   },
   listItemName: {
     fontSize: 18,
