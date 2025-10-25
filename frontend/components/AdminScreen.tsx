@@ -989,10 +989,16 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   deleteButton: {
-    backgroundColor: '#fef2f2',
-    padding: 8,
+    backgroundColor: '#fee2e2',
+    padding: 10,
     borderRadius: 8,
     marginLeft: 8,
+    borderWidth: 1,
+    borderColor: '#f87171',
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
