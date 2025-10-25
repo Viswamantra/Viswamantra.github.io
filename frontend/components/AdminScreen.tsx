@@ -116,28 +116,21 @@ const AdminScreen = () => {
   };
 
   const deleteCustomer = async (customerId: string, customerName: string) => {
-    Alert.alert(
-      'Delete Customer',
-      `Are you sure you want to delete ${customerName || 'this customer'}? This action cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await axios.delete(
-                `${EXPO_PUBLIC_BACKEND_URL}/api/admin/customers/${customerId}?admin_key=${adminKey}`
-              );
-              Alert.alert('Success', 'Customer deleted successfully');
-              loadCustomers();
-            } catch (error: any) {
-              Alert.alert('Error', error.response?.data?.detail || 'Failed to delete customer');
-            }
-          }
-        }
-      ]
-    );
+    const confirmed = window.confirm(`Are you sure you want to delete ${customerName || 'this customer'}? This action cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      console.log('Deleting customer:', customerId);
+      const response = await axios.delete(
+        `${EXPO_PUBLIC_BACKEND_URL}/api/admin/customers/${customerId}?admin_key=${adminKey}`
+      );
+      console.log('Delete response:', response.data);
+      alert('Customer deleted successfully!');
+      await loadCustomers();
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      alert(error.response?.data?.detail || 'Failed to delete customer');
+    }
   };
 
   const deleteMerchant = async (merchantId: string, merchantName: string) => {
