@@ -381,6 +381,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
+  descriptionContainer: {
+    backgroundColor: '#f0f9ff',
+    padding: 20,
+    borderRadius: 12,
+    marginHorizontal: 24,
+    marginBottom: 24,
+    borderLeftWidth: 4,
+    borderLeftColor: '#007AFF',
+  },
+  description: {
+    fontSize: 15,
+    color: '#1e40af',
+    lineHeight: 22,
+    marginBottom: 12,
+    textAlign: 'left',
+  },
+  tagline: {
+    fontSize: 14,
+    color: '#4CAF50',
+    fontWeight: '600',
+    fontStyle: 'italic',
+    textAlign: 'left',
+    lineHeight: 20,
+  },
 });
 
 export default AuthScreen;
