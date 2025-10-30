@@ -82,17 +82,11 @@ const AuthScreen = () => {
     <View style={styles.content}>
       <View style={styles.header}>
         <Text style={styles.title}>Welcome to OshirO</Text>
-        <Text style={styles.subtitle}>Discover amazing services near you</Text>
-      </View>
-
-      <View style={styles.descriptionContainer}>
         <Text style={styles.description}>
-          OshirO helps you find exciting deals and instant discounts wherever you go. 
-          Whether you're shopping, grabbing a bite, or exploring new stores, our app 
-          connects you with local merchants offering special savings just for you.
+          Find exciting deals and instant discounts wherever you go. Connect with local merchants offering special savings just for you.
         </Text>
         <Text style={styles.tagline}>
-          Discover, shop, and save — all with OshirO. Because every corner deserves a great deal!
+          Discover, shop, and save — all with OshirO!
         </Text>
       </View>
 
