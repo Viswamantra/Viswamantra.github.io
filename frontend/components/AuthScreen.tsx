@@ -234,19 +234,15 @@ const styles = StyleSheet.create({
     width: 40,
   },
   header: {
-    marginBottom: 40,
+    marginBottom: 32,
     alignItems: 'center',
+    paddingHorizontal: 8,
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
+    color: '#007AFF',
+    marginBottom: 16,
     textAlign: 'center',
   },
   formContainer: {
