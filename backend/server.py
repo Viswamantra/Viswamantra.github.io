@@ -352,8 +352,9 @@ async def verify_otp(request: VerifyOTPRequest):
         
         user = await db.users.find_one(user_query)
         
+        is_new_user = False
         if not user:
-            # Create new user
+            # Create new user (first time registration)
             new_user = User()
             if request.contact_type == "phone":
                 new_user.phone_number = request.contact
@@ -364,8 +365,10 @@ async def verify_otp(request: VerifyOTPRequest):
             
             await db.users.insert_one(new_user.dict())
             user_id = new_user.id
+            is_new_user = True
+            print(f"✅ New user created: {request.contact}")
         else:
-            # Update verification status
+            # User already exists - just login
             update_data = {}
             if request.contact_type == "phone":
                 update_data["is_phone_verified"] = True
@@ -377,6 +380,11 @@ async def verify_otp(request: VerifyOTPRequest):
                 {"$set": update_data}
             )
             user_id = user["id"]
+            print(f"✅ Existing user logged in: {request.contact} (Type: {user.get('user_type', 'customer')})")
+            
+            # Note: One phone number = One account
+            # User can be both customer AND merchant with same account
+            # They become merchant when they create a business
         
         # Create access token
         access_token = create_access_token(user_id)
