@@ -229,11 +229,11 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
+    paddingBottom: 40,
   },
   content: {
-    flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingTop: 20,
   },
   backButton: {
     marginBottom: 20,
