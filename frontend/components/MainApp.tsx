@@ -8,6 +8,7 @@ import MerchantScreen from './MerchantScreen';
 import AdminScreen from './AdminScreen';
 import QRGenerator from './QRGenerator';
 import ProfileScreen from './ProfileScreen';
+import LogoHeader from './LogoHeader';
 
 type TabType = 'customer' | 'merchant' | 'qr' | 'admin' | 'profile';
 
