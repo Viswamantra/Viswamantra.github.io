@@ -302,26 +302,56 @@ const AdminScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Platform Overview</Text>
           <View style={styles.metricsGrid}>
-            <View style={styles.metricCard}>
+            <TouchableOpacity 
+              style={styles.metricCard}
+              onPress={() => {
+                setActiveTab('customers');
+                loadCustomers();
+              }}
+            >
               <Ionicons name="people" size={24} color="#4CAF50" />
               <Text style={styles.metricValue}>{stats?.total_customers || 0}</Text>
               <Text style={styles.metricLabel}>Customers</Text>
-            </View>
-            <View style={styles.metricCard}>
+              <Ionicons name="arrow-forward" size={16} color="#666" style={styles.metricArrow} />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.metricCard}
+              onPress={() => {
+                setActiveTab('merchants');
+                loadMerchants();
+              }}
+            >
               <Ionicons name="business" size={24} color="#2196F3" />
               <Text style={styles.metricValue}>{stats?.total_merchants || 0}</Text>
               <Text style={styles.metricLabel}>Merchants</Text>
-            </View>
-            <View style={styles.metricCard}>
+              <Ionicons name="arrow-forward" size={16} color="#666" style={styles.metricArrow} />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.metricCard}
+              onPress={() => {
+                setActiveTab('merchants');
+                loadMerchants();
+              }}
+            >
               <Ionicons name="storefront" size={24} color="#FF9800" />
               <Text style={styles.metricValue}>{stats?.total_businesses || 0}</Text>
               <Text style={styles.metricLabel}>Businesses</Text>
-            </View>
-            <View style={styles.metricCard}>
+              <Ionicons name="arrow-forward" size={16} color="#666" style={styles.metricArrow} />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.metricCard}
+              onPress={() => {
+                setActiveTab('dashboard');
+              }}
+            >
               <Ionicons name="gift" size={24} color="#E91E63" />
               <Text style={styles.metricValue}>{stats?.total_offers || 0}</Text>
               <Text style={styles.metricLabel}>Active Offers</Text>
-            </View>
+              <Ionicons name="arrow-forward" size={16} color="#666" style={styles.metricArrow} />
+            </TouchableOpacity>
           </View>
         </View>
 
