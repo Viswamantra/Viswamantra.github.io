@@ -81,6 +81,11 @@ const AuthScreen = () => {
   const renderPhoneInput = () => (
     <View style={styles.content}>
       <View style={styles.header}>
+        <Image
+          source={require('../assets/oshiro-logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.title}>Welcome to OshirO</Text>
         <Text style={styles.description}>
           Find exciting deals and instant discounts wherever you go. Connect with local merchants offering special savings just for you.
