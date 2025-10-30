@@ -685,6 +685,13 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     marginBottom: 12,
+    position: 'relative',
+  },
+  metricArrow: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    opacity: 0.5,
   },
   metricValue: {
     fontSize: 24,
