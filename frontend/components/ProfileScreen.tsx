@@ -22,26 +22,19 @@ const ProfileScreen = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { user, logout, updatePreferences } = useAuth();
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-              // Navigation will be handled by parent component
-            } catch (error) {
-              console.error('Logout error:', error);
-            }
-          }
-        },
-      ]
-    );
+  const handleLogout = async () => {
+    const confirmed = confirm('Are you sure you want to logout?');
+    if (!confirmed) return;
+
+    try {
+      console.log('Logging out...');
+      await logout();
+      console.log('Logout successful');
+      // Navigation will be handled by parent component
+    } catch (error) {
+      console.error('Logout error:', error);
+      alert('Failed to logout. Please try again.');
+    }
   };
 
   const togglePreference = async (categoryId: string) => {
