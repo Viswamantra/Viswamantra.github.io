@@ -847,7 +847,7 @@ async def complete_payment(
 
 # WhatsApp Notification Routes
 async def send_whatsapp_notification(phone: str, message: str, message_type: str):
-    """Send WhatsApp notification (Mock implementation)"""
+    """Send WhatsApp notification via Meta Cloud API"""
     try:
         notification = WhatsAppNotification(
             recipient_phone=phone,
@@ -857,14 +857,47 @@ async def send_whatsapp_notification(phone: str, message: str, message_type: str
         
         await db.whatsapp_notifications.insert_one(notification.dict())
         
-        # Mock WhatsApp sending (In production, integrate with WhatsApp Business API)
-        print(f"📱 Mock WhatsApp to {phone}: {message}")
+        # Real WhatsApp sending via Meta Cloud API
+        import aiohttp
+        import os
         
-        return {"status": "sent", "notification_id": notification.id}
+        META_PHONE_NUMBER_ID = os.getenv("META_PHONE_NUMBER_ID")
+        META_ACCESS_TOKEN = os.getenv("META_ACCESS_TOKEN")
+        
+        if not META_PHONE_NUMBER_ID or not META_ACCESS_TOKEN:
+            print(f"⚠️ WhatsApp credentials not configured. Message logged but not sent: {phone}")
+            return {"status": "logged_only", "notification_id": notification.id}
+        
+        url = f"https://graph.facebook.com/v18.0/{META_PHONE_NUMBER_ID}/messages"
+        headers = {
+            "Authorization": f"Bearer {META_ACCESS_TOKEN}",
+            "Content-Type": "application/json"
+        }
+        
+        # Clean phone number (remove + sign, keep only digits)
+        clean_phone = phone.replace("+", "").replace("-", "").replace(" ", "")
+        
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": clean_phone,
+            "type": "text",
+            "text": {"body": message}
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=payload, headers=headers) as response:
+                result = await response.json()
+                
+                if response.status == 200:
+                    print(f"✅ WhatsApp sent to {phone}: {message[:50]}...")
+                    return {"status": "sent", "notification_id": notification.id, "meta_response": result}
+                else:
+                    print(f"❌ WhatsApp failed to {phone}: {result}")
+                    return {"status": "failed", "error": result, "notification_id": notification.id}
         
     except Exception as e:
-        print(f"WhatsApp notification failed: {e}")
-        return {"status": "failed"}
+        print(f"❌ WhatsApp notification error: {e}")
+        return {"status": "failed", "error": str(e)}
 
 @api_router.post("/notifications/send-discount-alert")
 async def send_discount_alert(
