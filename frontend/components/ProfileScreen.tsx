@@ -179,7 +179,7 @@ const ProfileScreen = () => {
           <View style={styles.infoCard}>
             <View style={styles.infoItem}>
               <Ionicons name="information-circle" size={20} color="#007AFF" />
-              <Text style={styles.infoText}>OshirO - Discover services near you</Text>
+              <Text style={styles.infoText}>OshirO App - Where Every Corner Has a Discount</Text>
             </View>
             <View style={styles.infoItem}>
               <Ionicons name="call" size={20} color="#007AFF" />
