@@ -35,6 +35,7 @@ const MainApp = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <LogoHeader />
       <View style={styles.content}>
         {renderContent()}
       </View>
