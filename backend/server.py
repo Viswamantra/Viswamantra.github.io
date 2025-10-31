@@ -468,6 +468,29 @@ async def get_my_businesses(current_user: dict = Depends(get_current_user)):
     businesses = await db.businesses.find({"owner_id": current_user["id"]}).to_list(100)
     return clean_mongo_docs(businesses)
 
+@api_router.put("/businesses/{business_id}")
+async def update_business(
+    business_id: str,
+    business_data: BusinessCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update business details (owner only)"""
+    # Verify business ownership
+    business = await db.businesses.find_one({"id": business_id, "owner_id": current_user["id"]})
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found or not owned by you")
+    
+    # Update business
+    update_data = business_data.dict()
+    await db.businesses.update_one(
+        {"id": business_id},
+        {"$set": update_data}
+    )
+    
+    # Get updated business
+    updated_business = await db.businesses.find_one({"id": business_id})
+    return clean_mongo_docs([updated_business])[0]
+
 @api_router.get("/businesses/{business_id}/services")
 async def get_business_services(business_id: str):
     """Get services for a specific business"""
