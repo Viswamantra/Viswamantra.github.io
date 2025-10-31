@@ -61,6 +61,7 @@ const MerchantScreen = () => {
   const [showCreateBusiness, setShowCreateBusiness] = useState(false);
   const [showCreateOffer, setShowCreateOffer] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [editingBusiness, setEditingBusiness] = useState<Business | null>(null);
   
   // Business form state
   const [businessForm, setBusinessForm] = useState({
