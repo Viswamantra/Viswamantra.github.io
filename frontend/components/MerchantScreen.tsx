@@ -620,7 +620,7 @@ const MerchantScreen = () => {
             <TouchableOpacity onPress={() => setShowCreateBusiness(false)}>
               <Text style={styles.modalCancel}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Register Business</Text>
+            <Text style={styles.modalTitle}>{editingBusiness ? 'Edit Business' : 'Register Business'}</Text>
             <TouchableOpacity onPress={handleCreateBusiness} disabled={loading}>
               <Text style={[styles.modalSave, loading && styles.modalSaveDisabled]}>
                 {loading ? 'Creating...' : 'Save'}
