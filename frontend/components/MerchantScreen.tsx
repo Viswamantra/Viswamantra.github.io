@@ -132,16 +132,17 @@ const MerchantScreen = () => {
 
   const handleCreateBusiness = async () => {
     if (!businessForm.business_name.trim() || !businessForm.address.trim()) {
-      Alert.alert('Error', 'Please fill in business name and address');
+      alert('Please fill in business name and address');
       return;
     }
 
     setLoading(true);
     try {
       // Get current location for business
-      const { status } = await Location.requestForegroundPermissionsAsync();
+      const { status} = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Error', 'Location permission is required to register a business');
+        alert('Location permission is required to register a business');
+        setLoading(false);
         return;
       }
 
@@ -157,17 +158,35 @@ const MerchantScreen = () => {
         },
       };
 
-      const response = await axios.post(
-        `${EXPO_PUBLIC_BACKEND_URL}/api/businesses`,
-        businessData,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      if (editingBusiness) {
+        // Update existing business
+        const response = await axios.put(
+          `${EXPO_PUBLIC_BACKEND_URL}/api/businesses/${editingBusiness.id}`,
+          businessData,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
 
-      setBusinesses(prev => [...prev, response.data]);
-      setSelectedBusiness(response.data);
+        setBusinesses(prev => prev.map(b => b.id === editingBusiness.id ? response.data : b));
+        alert('Business updated successfully!');
+      } else {
+        // Create new business
+        const response = await axios.post(
+          `${EXPO_PUBLIC_BACKEND_URL}/api/businesses`,
+          businessData,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+
+        setBusinesses(prev => [...prev, response.data]);
+        setSelectedBusiness(response.data);
+        alert('Business registered successfully!');
+      }
+
       setShowCreateBusiness(false);
+      setEditingBusiness(null);
       
       // Reset form
       setBusinessForm({
@@ -178,10 +197,8 @@ const MerchantScreen = () => {
         email: '',
         address: '',
       });
-
-      Alert.alert('Success', 'Business registered successfully!');
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.detail || 'Failed to register business');
+      alert(error.response?.data?.detail || 'Failed to save business');
     } finally {
       setLoading(false);
     }
