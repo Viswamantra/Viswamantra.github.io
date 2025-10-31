@@ -1043,6 +1043,14 @@ const styles = StyleSheet.create({
   businessActions: {
     marginLeft: 12,
   },
+  editButton: {
+    padding: 8,
+    backgroundColor: '#f0f7ff',
+    borderRadius: 6,
+    marginBottom: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   selectButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
