@@ -87,6 +87,20 @@ const MerchantScreen = () => {
 
   const { user, token } = useAuth();
 
+  // Populate form when editing
+  useEffect(() => {
+    if (editingBusiness) {
+      setBusinessForm({
+        business_name: editingBusiness.business_name || '',
+        description: editingBusiness.description || '',
+        category: editingBusiness.category || 'food',
+        phone_number: editingBusiness.contact_number || '',
+        email: editingBusiness.email || '',
+        address: editingBusiness.address || '',
+      });
+    }
+  }, [editingBusiness]);
+
   useEffect(() => {
     loadMerchantData();
   }, []);
