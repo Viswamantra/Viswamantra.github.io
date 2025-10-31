@@ -380,6 +380,15 @@ const MerchantScreen = () => {
                 </View>
                 <View style={styles.businessActions}>
                   <TouchableOpacity 
+                    style={styles.editButton}
+                    onPress={() => {
+                      setEditingBusiness(item);
+                      setShowCreateBusiness(true);
+                    }}
+                  >
+                    <Ionicons name="pencil" size={18} color="#007AFF" />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
                     style={styles.selectButton}
                     onPress={() => setSelectedBusiness(item)}
                   >
