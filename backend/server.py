@@ -74,6 +74,7 @@ class User(BaseModel):
     user_type: str = "customer"  # customer, business_owner
     preferences: List[str] = []  # ["food", "clothing", "spa"]
     location: Optional[dict] = None  # {"latitude": float, "longitude": float}
+    push_token: Optional[str] = None  # Expo push notification token
     created_at: datetime = Field(default_factory=datetime.utcnow)
     is_active: bool = True
 
