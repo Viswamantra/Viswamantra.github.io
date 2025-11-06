@@ -598,37 +598,61 @@ async def create_offer(
     
     await db.offers.insert_one(offer.dict())
     
-    # AUTO-SEND WhatsApp notifications to nearby customers
+    # AUTO-SEND WhatsApp and Push notifications to nearby customers
     try:
         nearby_users = await db.users.find({
             "location": {"$exists": True},
             "preferences": {"$in": [business["category"]]}
         }).to_list(100)
         
-        notifications_sent = 0
+        whatsapp_notifications_sent = 0
+        push_tokens = []
+        
         for user in nearby_users:
-            if user.get("phone_number"):
-                distance = calculate_distance(
-                    business["location"]["latitude"],
-                    business["location"]["longitude"],
-                    user["location"]["latitude"],
-                    user["location"]["longitude"]
-                )
+            distance = calculate_distance(
+                business["location"]["latitude"],
+                business["location"]["longitude"],
+                user["location"]["latitude"],
+                user["location"]["longitude"]
+            )
+            
+            if distance <= 5000:  # 5km radius
+                discount_text = f"{offer.discount_value}%" if offer.discount_type == "percentage" else f"₹{offer.discount_value}"
+                message = f"🎁 New offer near you! {discount_text} OFF at {business['business_name']}. {offer.title} - {offer.description}. Visit now!"
                 
-                if distance <= 5000:  # 5km radius
-                    discount_text = f"{offer.discount_value}%" if offer.discount_type == "percentage" else f"₹{offer.discount_value}"
-                    message = f"🎁 New offer near you! {discount_text} OFF at {business['business_name']}. {offer.title} - {offer.description}. Visit now!"
-                    
+                # Send WhatsApp notification
+                if user.get("phone_number"):
                     await send_whatsapp_notification(
                         user["phone_number"],
                         message,
                         "discount_alert"
                     )
-                    notifications_sent += 1
+                    whatsapp_notifications_sent += 1
+                
+                # Collect push tokens for batch sending
+                if user.get("push_token"):
+                    push_tokens.append(user["push_token"])
         
-        print(f"✅ Auto-sent {notifications_sent} WhatsApp notifications for new offer")
+        # Send push notifications in batch
+        if push_tokens:
+            discount_text = f"{offer.discount_value}%" if offer.discount_type == "percentage" else f"₹{offer.discount_value}"
+            push_result = await send_push_notification(
+                push_tokens,
+                f"New Offer: {discount_text} OFF!",
+                f"{offer.title} at {business['business_name']}",
+                {
+                    "type": "new_offer",
+                    "offer_id": offer.id,
+                    "business_id": business_id,
+                    "discount_value": offer.discount_value,
+                    "discount_type": offer.discount_type
+                }
+            )
+            print(f"✅ Auto-sent push notifications to {len(push_tokens)} devices: {push_result}")
+        
+        print(f"✅ Auto-sent {whatsapp_notifications_sent} WhatsApp notifications for new offer")
     except Exception as e:
-        print(f"⚠️ WhatsApp auto-notification failed: {e}")
+        print(f"⚠️ Auto-notification failed: {e}")
     
     return offer
 
