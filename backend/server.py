@@ -477,6 +477,19 @@ async def update_user_location(
     
     return {"success": True, "message": "Location updated successfully"}
 
+@api_router.put("/users/push-token")
+async def update_push_token(
+    push_token: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update user's push notification token"""
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"push_token": push_token}}
+    )
+    
+    return {"success": True, "message": "Push token updated successfully"}
+
 # Business Routes
 @api_router.post("/businesses", response_model=Business)
 async def create_business(
