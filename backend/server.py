@@ -285,6 +285,42 @@ def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     
     return c * r
 
+async def send_push_notification(push_tokens: List[str], title: str, body: str, data: dict = None):
+    """Send push notification via Expo Push API"""
+    import aiohttp
+    
+    if not push_tokens:
+        return {"success": False, "message": "No push tokens provided"}
+    
+    messages = []
+    for token in push_tokens:
+        if token and token.startswith("ExponentPushToken["):
+            message = {
+                "to": token,
+                "sound": "default",
+                "title": title,
+                "body": body,
+                "data": data or {}
+            }
+            messages.append(message)
+    
+    if not messages:
+        return {"success": False, "message": "No valid push tokens"}
+    
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                "https://exp.host/--/api/v2/push/send",
+                json=messages,
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                result = await response.json()
+                print(f"✅ Push notification sent to {len(messages)} devices")
+                return {"success": True, "result": result}
+    except Exception as e:
+        print(f"❌ Push notification failed: {e}")
+        return {"success": False, "error": str(e)}
+
 # Authentication Routes
 @api_router.post("/auth/send-otp")
 async def send_otp(request: SendOTPRequest):
