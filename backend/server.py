@@ -389,7 +389,6 @@ async def verify_otp(request: VerifyOTPRequest):
         
         user = await db.users.find_one(user_query)
         
-        is_new_user = False
         if not user:
             # Create new user (first time registration)
             new_user = User()
