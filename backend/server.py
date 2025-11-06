@@ -760,21 +760,78 @@ async def get_nearby_offers(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.put("/offers/{offer_id}")
+async def update_offer(
+    offer_id: str,
+    offer_data: OfferCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update an existing offer (business owner only)"""
+    # Get the offer
+    offer = await db.offers.find_one({"id": offer_id})
+    if not offer:
+        raise HTTPException(status_code=404, detail="Offer not found")
+    
+    # Get the business to verify ownership
+    business = await db.businesses.find_one({"id": offer["business_id"]})
+    if not business or business["owner_id"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="You can only edit your own offers")
+    
+    # Parse valid_until date
+    from datetime import datetime
+    try:
+        valid_until = datetime.fromisoformat(offer_data.valid_until.replace('Z', '+00:00'))
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format for valid_until")
+    
+    # Calculate discounted price if original price is provided
+    discounted_price = None
+    if offer_data.original_price:
+        if offer_data.discount_type == "percentage":
+            discounted_price = offer_data.original_price * (1 - offer_data.discount_value / 100)
+        else:
+            discounted_price = offer_data.original_price - offer_data.discount_value
+    
+    # Update offer fields
+    update_data = {
+        "title": offer_data.title,
+        "description": offer_data.description,
+        "discount_type": offer_data.discount_type,
+        "discount_value": offer_data.discount_value,
+        "original_price": offer_data.original_price,
+        "discounted_price": discounted_price,
+        "image_base64": offer_data.image_base64,
+        "valid_until": valid_until,
+        "max_uses": offer_data.max_uses,
+        "terms_conditions": offer_data.terms_conditions
+    }
+    
+    await db.offers.update_one(
+        {"id": offer_id},
+        {"$set": update_data}
+    )
+    
+    # Get updated offer
+    updated_offer = await db.offers.find_one({"id": offer_id})
+    return clean_mongo_doc(updated_offer)
+
 @api_router.put("/offers/{offer_id}/deactivate")
 async def deactivate_offer(
     offer_id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    """Deactivate an offer"""
-    # Find offer and verify ownership through business
+    """Deactivate an offer (business owner only)"""
+    # Get the offer
     offer = await db.offers.find_one({"id": offer_id})
     if not offer:
         raise HTTPException(status_code=404, detail="Offer not found")
     
-    business = await db.businesses.find_one({"id": offer["business_id"], "owner_id": current_user["id"]})
-    if not business:
-        raise HTTPException(status_code=404, detail="Business not found or not owned by user")
+    # Get the business to verify ownership
+    business = await db.businesses.find_one({"id": offer["business_id"]})
+    if not business or business["owner_id"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="You can only deactivate your own offers")
     
+    # Deactivate the offer
     await db.offers.update_one(
         {"id": offer_id},
         {"$set": {"is_active": False}}
