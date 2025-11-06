@@ -583,7 +583,7 @@ async def create_offer(
     from datetime import datetime
     try:
         valid_until = datetime.fromisoformat(offer_data.valid_until.replace('Z', '+00:00'))
-    except:
+    except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format for valid_until")
     
     # Calculate discounted price if original price is provided
