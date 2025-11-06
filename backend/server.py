@@ -402,7 +402,6 @@ async def verify_otp(request: VerifyOTPRequest):
             
             await db.users.insert_one(new_user.dict())
             user_id = new_user.id
-            is_new_user = True
             print(f"✅ New user created: {request.contact}")
         else:
             # User already exists - just login
